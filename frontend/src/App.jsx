@@ -11,6 +11,7 @@ function App() {
       const data = await checkHealth();
       setBackendStatus(`✅ Connected! Server says: ${data.status}`);
     } catch (error) {
+        console.error('Connection error:', error);
       setBackendStatus('❌ Connection failed. Is your backend running?');
     }
     setLoading(false);
