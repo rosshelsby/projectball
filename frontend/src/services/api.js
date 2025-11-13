@@ -57,3 +57,72 @@ export const getMyPlayers = async () => {
     throw error;
   }
 };
+
+// Get user's fixtures
+export const getMyFixtures = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.get(`${API_URL}/matches/my-fixtures`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching fixtures:', error);
+    throw error;
+  }
+};
+
+// Get league table
+export const getLeagueTable = async (leagueId) => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.get(`${API_URL}/matches/league-table/${leagueId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching league table:', error);
+    throw error;
+  }
+};
+
+// Simulate matchday (admin function)
+export const simulateMatchday = async (leagueId) => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.post(`${API_URL}/matches/simulate-matchday`, 
+      { leagueId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error simulating matchday:', error);
+    throw error;
+  }
+};

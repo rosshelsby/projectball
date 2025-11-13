@@ -134,6 +134,21 @@ function Dashboard() {
         >
           View My Squad
         </button>
+        <button 
+          onClick={() => navigate('/fixtures')}
+          style={{
+            marginTop: '10px',
+            padding: '10px 20px',
+            backgroundColor: '#28a745',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '16px'
+          }}
+        >
+          View Fixtures & Results
+        </button>
         <p style={{ color: '#666', marginTop: '20px' }}>
           More features coming soon: Player roster, training facilities, match schedule...
         </p>

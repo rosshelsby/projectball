@@ -16,10 +16,12 @@ app.use(express.json()); // Parse JSON request bodies
 // Import routes
 const authRoutes = require('./routes/auth');
 const teamRoutes = require('./routes/teams');
+const matchRoutes = require('./routes/matches');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamRoutes);
+app.use('/api/matches', matchRoutes);
 
 // Test route - just to verify server works
 app.get('/api/health', (req, res) => {
