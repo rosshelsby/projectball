@@ -2,22 +2,17 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-function Register() {
+function Login() {
   const navigate = useNavigate();
   
-  // Form state
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    username: '',
-    teamName: ''
+    password: ''
   });
   
-  // UI state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Handle input changes
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -25,19 +20,18 @@ function Register() {
     });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevents page reload
-    setError(''); // Clear previous errors
+    e.preventDefault();
+    setError('');
     setLoading(true);
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/auth/register',
+        'http://localhost:5000/api/auth/login',
         formData
       );
 
-      // Save token to localStorage
+      // Save token and user data
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       localStorage.setItem('team', JSON.stringify(response.data.team));
@@ -46,8 +40,7 @@ function Register() {
       navigate('/dashboard');
       
     } catch (err) {
-      // Display error message from backend
-      setError(err.response?.data?.error || 'Registration failed');
+      setError(err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -60,7 +53,7 @@ function Register() {
       padding: '20px',
       fontFamily: 'sans-serif'
     }}>
-      <h1>Register</h1>
+      <h1>Login</h1>
       
       {error && (
         <div style={{ 
@@ -97,26 +90,6 @@ function Register() {
 
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', marginBottom: '5px' }}>
-            Username:
-          </label>
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-            style={{ 
-              width: '100%', 
-              padding: '8px',
-              fontSize: '14px',
-              border: '1px solid #ccc',
-              borderRadius: '4px'
-            }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>
             Password:
           </label>
           <input
@@ -135,58 +108,38 @@ function Register() {
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>
-            Team Name:
-          </label>
-          <input
-            type="text"
-            name="teamName"
-            value={formData.teamName}
-            onChange={handleChange}
-            required
-            style={{ 
-              width: '100%', 
-              padding: '8px',
-              fontSize: '14px',
-              border: '1px solid #ccc',
-              borderRadius: '4px'
-            }}
-          />
-        </div>
-
         <button
           type="submit"
           disabled={loading}
           style={{
             width: '100%',
             padding: '10px',
-            backgroundColor: loading ? '#ccc' : '#007bff',
+            backgroundColor: loading ? '#ccc' : '#28a745',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
             fontSize: '16px',
-            cursor: loading ? 'not-allowed' : 'pointer'
+            cursor: loading ? 'not-allowed' : 'pointer',
+            marginBottom: '15px'
           }}
         >
-          {loading ? 'Registering...' : 'Register'}
+          {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
 
-          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+      <div style={{ textAlign: 'center', marginTop: '20px' }}>
         <p style={{ color: '#666' }}>
-          Already have an account?{' '}
+          Don't have an account?{' '}
           <Link 
-            to="/login" 
+            to="/register" 
             style={{ color: '#007bff', textDecoration: 'none' }}
           >
-            Login here
+            Register here
           </Link>
         </p>
       </div>
-
     </div>
   );
 }
 
-export default Register;
+export default Login;

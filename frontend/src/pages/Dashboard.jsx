@@ -1,25 +1,77 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { verifyToken } from '../services/api';
 
 function Dashboard() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [team, setTeam] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Load user and team from localStorage
-    const storedUser = localStorage.getItem('user');
-    const storedTeam = localStorage.getItem('team');
-    
-    if (storedUser) setUser(JSON.parse(storedUser));
-    if (storedTeam) setTeam(JSON.parse(storedTeam));
-  }, []);
+    // Verify token when component loads
+    const checkAuth = async () => {
+      try {
+        const data = await verifyToken();
+        setUser(data.user);
+        setTeam(data.team);
+        
+        // Update localStorage with fresh data from server
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('team', JSON.stringify(data.team));
+        
+      } catch (err) {
+        console.error('Authentication failed:', err);
+        setError('Session expired. Please login again.');
+        
+        // Clear invalid token
+        localStorage.clear();
+        
+        // Redirect to registration after 2 seconds
+        setTimeout(() => {
+          navigate('/');
+        }, 2000);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.clear();
-    window.location.href = '/';
+    navigate('/');
   };
 
+  if (loading) {
+    return (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '50px',
+        fontFamily: 'sans-serif'
+      }}>
+        <h2>Verifying authentication...</h2>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '50px',
+        fontFamily: 'sans-serif'
+      }}>
+        <h2 style={{ color: 'red' }}>{error}</h2>
+        <p>Redirecting to login...</p>
+      </div>
+    );
+  }
+
   if (!user || !team) {
-    return <div>Loading...</div>;
+    return <div>Error loading data...</div>;
   }
 
   return (
@@ -54,6 +106,9 @@ function Dashboard() {
       }}>
         <h2>Welcome, {user.username}!</h2>
         <p><strong>Email:</strong> {user.email}</p>
+        <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+          ✅ Token verified with server
+        </p>
       </div>
 
       <div style={{ 

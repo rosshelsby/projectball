@@ -13,3 +13,25 @@ export const checkHealth = async () => {
     throw error;
   }
 };
+
+// Verify token and get user data
+export const verifyToken = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.get(`${API_URL}/auth/verify`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    throw error;
+  }
+};
