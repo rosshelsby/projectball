@@ -13,6 +13,12 @@ const app = express();
 app.use(cors()); // Allow frontend to connect
 app.use(express.json()); // Parse JSON request bodies
 
+// Import routes
+const authRoutes = require('./routes/auth');
+
+// Use routes
+app.use('/api/auth', authRoutes);
+
 // Test route - just to verify server works
 app.get('/api/health', (req, res) => {
   res.json({ 
