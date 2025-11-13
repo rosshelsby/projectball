@@ -87,7 +87,30 @@ router.post('/register', async (req, res) => {
       throw teamError;
     }
 
-    // 8. Generate JWT token
+    // 8. Assign 25 random free agents to the new team
+    const { data: freePlayers } = await supabase
+      .from('players')
+      .select('id')
+      .eq('is_free_agent', true)
+      .limit(25);
+    
+    if (freePlayers && freePlayers.length === 25) {
+      const playerIds = freePlayers.map(p => p.id);
+      
+      await supabase
+        .from('players')
+        .update({ 
+          team_id: newTeam.id,
+          is_free_agent: false
+        })
+        .in('id', playerIds);
+      
+      console.log(`Assigned 25 players to team ${newTeam.team_name}`);
+    } else {
+      console.warn('Not enough free agents available!');
+    }
+
+    // 9. Generate JWT token
     const token = jwt.sign(
       { 
         userId: newUser.id,
@@ -98,7 +121,7 @@ router.post('/register', async (req, res) => {
       { expiresIn: '7d' } // Token valid for 7 days
     );
 
-    // 9. Send success response
+    // 10. Send success response
     res.status(201).json({
       message: 'User registered successfully',
       token,

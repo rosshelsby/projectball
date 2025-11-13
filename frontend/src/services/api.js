@@ -35,3 +35,25 @@ export const verifyToken = async () => {
     throw error;
   }
 };
+
+// Get all players for the authenticated user's team
+export const getMyPlayers = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.get(`${API_URL}/teams/my-players`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    throw error;
+  }
+};

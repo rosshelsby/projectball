@@ -119,6 +119,21 @@ function Dashboard() {
       }}>
         <h2>Your Team: {team.teamName}</h2>
         <p><strong>Budget:</strong> ${team.budget.toLocaleString()}</p>
+        <button 
+          onClick={() => navigate('/squad')}
+          style={{
+            marginTop: '15px',
+            padding: '10px 20px',
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '16px'
+          }}
+        >
+          View My Squad
+        </button>
         <p style={{ color: '#666', marginTop: '20px' }}>
           More features coming soon: Player roster, training facilities, match schedule...
         </p>
