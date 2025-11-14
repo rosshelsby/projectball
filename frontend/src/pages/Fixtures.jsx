@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMyFixtures, getLeagueTable, simulateMatchday } from '../services/api';
+import { getMyFixtures, getLeagueTable, simulateMatchday, getNextScheduledMatch } from '../services/api';
 
 function Fixtures() {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ function Fixtures() {
   const [loading, setLoading] = useState(true);
   const [simulating, setSimulating] = useState(false);
   const [error, setError] = useState('');
+  const [nextMatch, setNextMatch] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -24,6 +25,10 @@ function Fixtures() {
         const tableData = await getLeagueTable(fixturesData.league.id);
         setTable(tableData.table);
       }
+
+      // Fetch next match info
+      const nextMatchData = await getNextScheduledMatch();
+      setNextMatch(nextMatchData);
       
     } catch (err) {
       console.error('Failed to load data:', err);
@@ -130,6 +135,38 @@ function Fixtures() {
         <p style={{ margin: 0, fontSize: '18px' }}>{fixtures.team.team_name}</p>
       </div>
 
+      {/* Auto-Simulation Status */}
+      {nextMatch && nextMatch.hasMatches && (
+        <div style={{ 
+          backgroundColor: nextMatch.isOverdue ? '#ffc107' : '#28a745',
+          color: nextMatch.isOverdue ? '#000' : '#fff',
+          padding: '15px', 
+          borderRadius: '8px',
+          marginBottom: '30px',
+          textAlign: 'center'
+        }}>
+          <strong>
+            {nextMatch.isOverdue 
+              ? `⚠️ Matchday ${nextMatch.matchday} is overdue - will simulate within 5 minutes`
+              : `⏰ Next matchday (${nextMatch.matchday}) in ${nextMatch.hoursUntil}h ${nextMatch.minutesUntil % 60}m`
+            }
+          </strong>
+        </div>
+      )}
+      
+      {nextMatch && !nextMatch.hasMatches && (
+        <div style={{ 
+          backgroundColor: '#6c757d',
+          color: '#fff',
+          padding: '15px', 
+          borderRadius: '8px',
+          marginBottom: '30px',
+          textAlign: 'center'
+        }}>
+          <strong>🏆 Season Complete!</strong>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
         {/* Left Column - Fixtures */}
         <div>
@@ -140,7 +177,7 @@ function Fixtures() {
               <p style={{ color: '#666' }}>No upcoming fixtures - season complete!</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {fixtures.upcoming.slice(0, 5).map(match => {
+                {fixtures.upcoming.slice(0, 10).map(match => {
                   const isHome = match.home_team.id === fixtures.team.id;
                   const venue = isHome ? 'Home' : 'Away';
                   
@@ -260,14 +297,14 @@ function Fixtures() {
                   </tr>
                 </thead>
                 <tbody>
-                  {table.map((team, index) => {
+                  {table.map((team,) => {
                     const isMyTeam = team.teamId === fixtures.team.id;
                     return (
                       <tr 
                         key={team.teamId}
                         style={{ 
                           borderTop: '1px solid #dee2e6',
-                          backgroundColor: isMyTeam ? '#e7f3ff' : '#2266aaff',
+                          backgroundColor: isMyTeam ? '#18b153ff' : '#2266aaff',
                           fontWeight: isMyTeam ? 'bold' : 'normal'
                         }}
                       >

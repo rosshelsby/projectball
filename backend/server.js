@@ -17,11 +17,13 @@ app.use(express.json()); // Parse JSON request bodies
 const authRoutes = require('./routes/auth');
 const teamRoutes = require('./routes/teams');
 const matchRoutes = require('./routes/matches');
+const trainingRoutes = require('./routes/training');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/matches', matchRoutes);
+app.use('/api/training', trainingRoutes);
 
 // Test route - just to verify server works
 app.get('/api/health', (req, res) => {
@@ -33,6 +35,8 @@ app.get('/api/health', (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
+const { startScheduler } = require('./services/matchScheduler');
+startScheduler(5);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Squad from './pages/Squad';
 import Fixtures from './pages/Fixtures';
+import Training from './pages/Training';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/squad" element={<Squad />} />
         <Route path="/fixtures" element={<Fixtures />} />
+        <Route path="/training" element={<Training />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

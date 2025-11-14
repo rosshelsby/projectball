@@ -84,6 +84,22 @@ function Dashboard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>Dashboard</h1>
         <button 
+          onClick={() => navigate('/training')}
+          style={{
+            marginTop: '10px',
+            padding: '10px 20px',
+            backgroundColor: '#ffc107',
+            color: '#000',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: 'bold'
+          }}
+        >
+          ⚙️ Training Facilities
+        </button>
+        <button 
           onClick={handleLogout}
           style={{
             padding: '10px 20px',
@@ -99,7 +115,7 @@ function Dashboard() {
       </div>
 
       <div style={{ 
-        backgroundColor: '#f8f9fa', 
+        backgroundColor: '#0c4f92ff', 
         padding: '20px', 
         borderRadius: '8px',
         marginTop: '20px'
@@ -112,7 +128,7 @@ function Dashboard() {
       </div>
 
       <div style={{ 
-        backgroundColor: '#e7f3ff', 
+        backgroundColor: '#0c4f92ff', 
         padding: '20px', 
         borderRadius: '8px',
         marginTop: '20px'

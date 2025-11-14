@@ -8,15 +8,13 @@ const supabase = createClient(
 
 // Calculate next match date (matches happen twice per week: Wednesday and Sunday)
 function getNextMatchDate(matchdayNumber) {
-  const startDate = new Date('2025-01-08'); // Start season on January 8, 2025 (Wednesday)
+  const startDate = new Date(); // Start season on January 8, 2025 (Wednesday)
   
   // Matches on Wednesday (matchday 1, 3, 5...) and Sunday (matchday 2, 4, 6...)
-  const daysToAdd = Math.floor((matchdayNumber - 1) / 2) * 7; // Week number
-  const isWednesday = matchdayNumber % 2 === 1;
-  const dayOffset = isWednesday ? 0 : 4; // Sunday is 4 days after Wednesday
+  const daysToAdd = (matchdayNumber - 1) * 2;
   
   const matchDate = new Date(startDate);
-  matchDate.setDate(matchDate.getDate() + daysToAdd + dayOffset);
+  matchDate.setDate(matchDate.getDate() + daysToAdd);
   matchDate.setHours(20, 0, 0, 0); // 8 PM
   
   return matchDate;
@@ -53,48 +51,88 @@ async function scheduleMatches() {
     const teams = memberships.map(m => m.teams);
     console.log(`Found ${teams.length} teams`);
     
-    // 3. Generate balanced round-robin schedule
+// 3. Generate matches with MAXIMUM alternation
     const matches = [];
     const numTeams = teams.length;
-    
-    if (numTeams % 2 !== 0) {
-      // If odd number of teams, add a "bye" placeholder
-      teams.push({ id: 'BYE', team_name: 'BYE' });
-    }
-    
-    const totalRounds = (teams.length - 1) * 2; // Home and away
     let matchday = 1;
     
-    // Round-robin algorithm (rotating teams except first)
-    for (let round = 0; round < totalRounds; round++) {
-      const isSecondHalf = round >= teams.length - 1;
+    // Create all pairings
+    const allPairings = [];
+    for (let i = 0; i < numTeams; i++) {
+      for (let j = i + 1; j < numTeams; j++) {
+        allPairings.push({ team1: teams[i], team2: teams[j] });
+      }
+    }
+    
+    // Shuffle pairings to randomize fixture order
+    allPairings.sort(() => Math.random() - 0.5);
+    
+    // Track last venue for each team
+    const lastVenue = {};
+    teams.forEach(team => lastVenue[team.id] = null);
+    
+    // FIRST HALF: Strict alternation
+    allPairings.forEach(pairing => {
+      const { team1, team2 } = pairing;
       
-      for (let i = 0; i < teams.length / 2; i++) {
-        const home = teams[i];
-        const away = teams[teams.length - 1 - i];
-        
-        // Skip if either team is BYE
-        if (home.id === 'BYE' || away.id === 'BYE') continue;
-        
-        // In second half of season, swap home/away
-        const homeTeam = isSecondHalf ? away : home;
-        const awayTeam = isSecondHalf ? home : away;
-        
-        matches.push({
-          league_id: league.id,
-          home_team_id: homeTeam.id,
-          away_team_id: awayTeam.id,
-          matchday: matchday,
-          scheduled_date: getNextMatchDate(matchday).toISOString(),
-          season: '2024-25',
-          is_played: false
-        });
+      let homeTeam, awayTeam;
+      
+      // RULE 1: If one team played home last time, they MUST play away this time
+      if (lastVenue[team1.id] === 'H' && lastVenue[team2.id] !== 'H') {
+        homeTeam = team2;
+        awayTeam = team1;
+      } 
+      else if (lastVenue[team2.id] === 'H' && lastVenue[team1.id] !== 'H') {
+        homeTeam = team1;
+        awayTeam = team2;
+      }
+      // RULE 2: If one team played away last time, they should play home this time
+      else if (lastVenue[team1.id] === 'A' && lastVenue[team2.id] !== 'A') {
+        homeTeam = team1;
+        awayTeam = team2;
+      }
+      else if (lastVenue[team2.id] === 'A' && lastVenue[team1.id] !== 'A') {
+        homeTeam = team2;
+        awayTeam = team1;
+      }
+      // RULE 3: If both have same last venue, randomize
+      else {
+        const flip = Math.random() < 0.5;
+        homeTeam = flip ? team1 : team2;
+        awayTeam = flip ? team2 : team1;
       }
       
-      // Rotate teams (keep first team fixed, rotate others)
-      teams.splice(1, 0, teams.pop());
+      matches.push({
+        league_id: league.id,
+        home_team_id: homeTeam.id,
+        away_team_id: awayTeam.id,
+        matchday: matchday,
+        scheduled_date: getNextMatchDate(matchday).toISOString(),
+        season: '2024-25',
+        is_played: false
+      });
+      
+      lastVenue[homeTeam.id] = 'H';
+      lastVenue[awayTeam.id] = 'A';
+      
       matchday++;
-    }
+    });
+    
+    // SECOND HALF: Exact reverse
+    const firstHalfMatches = [...matches];
+    firstHalfMatches.forEach(match => {
+      matches.push({
+        league_id: league.id,
+        home_team_id: match.away_team_id,
+        away_team_id: match.home_team_id,
+        matchday: matchday,
+        scheduled_date: getNextMatchDate(matchday).toISOString(),
+        season: '2024-25',
+        is_played: false
+      });
+      
+      matchday++;
+    });
     
     console.log(`Generated ${matches.length} matches across ${matchday - 1} matchdays`);
     

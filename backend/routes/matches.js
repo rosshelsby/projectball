@@ -220,4 +220,69 @@ router.post('/simulate-matchday', verifyToken, async (req, res) => {
   }
 });
 
+// Get next scheduled match info (for showing countdown)
+router.get('/next-scheduled', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    // Get user's team
+    const { data: team } = await supabase
+      .from('teams')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
+    
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    
+    // Get user's league
+    const { data: membership } = await supabase
+      .from('league_memberships')
+      .select('league_id')
+      .eq('team_id', team.id)
+      .eq('season', '2024-25')
+      .single();
+    
+    if (!membership) {
+      return res.status(404).json({ error: 'Not in a league' });
+    }
+    
+    // Get next unplayed match for this league
+    const { data: nextMatch } = await supabase
+      .from('matches')
+      .select('scheduled_date, matchday')
+      .eq('league_id', membership.league_id)
+      .eq('is_played', false)
+      .order('scheduled_date')
+      .limit(1)
+      .single();
+    
+    if (!nextMatch) {
+      return res.json({ 
+        hasMatches: false,
+        message: 'Season complete!'
+      });
+    }
+    
+    const now = new Date();
+    const matchDate = new Date(nextMatch.scheduled_date);
+    const isOverdue = matchDate < now;
+    const timeUntil = matchDate - now;
+    
+    res.json({
+      hasMatches: true,
+      matchday: nextMatch.matchday,
+      scheduledDate: nextMatch.scheduled_date,
+      isOverdue: isOverdue,
+      minutesUntil: Math.floor(timeUntil / 1000 / 60),
+      hoursUntil: Math.floor(timeUntil / 1000 / 60 / 60)
+    });
+    
+  } catch (error) {
+    console.error('Error fetching next match:', error);
+    res.status(500).json({ error: 'Failed to fetch next match' });
+  }
+});
+
 module.exports = router;

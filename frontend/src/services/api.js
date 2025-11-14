@@ -102,6 +102,28 @@ export const getLeagueTable = async (leagueId) => {
   }
 };
 
+// Get next scheduled match info
+export const getNextScheduledMatch = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.get(`${API_URL}/matches/next-scheduled`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching next match:', error);
+    throw error;
+  }
+};
+
 // Simulate matchday (admin function)
 export const simulateMatchday = async (leagueId) => {
   try {
@@ -123,6 +145,78 @@ export const simulateMatchday = async (leagueId) => {
     return response.data;
   } catch (error) {
     console.error('Error simulating matchday:', error);
+    throw error;
+  }
+};
+
+// Get team's training facilities
+export const getTrainingFacilities = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.get(`${API_URL}/training/facilities`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching facilities:', error);
+    throw error;
+  }
+};
+
+// Upgrade a facility
+export const upgradeFacility = async (facilityType) => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.post(`${API_URL}/training/upgrade-facility`,
+      { facilityType },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error upgrading facility:', error);
+    throw error;
+  }
+};
+
+// Train a player
+export const trainPlayer = async (playerId) => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.post(`${API_URL}/training/train-player`,
+      { playerId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error training player:', error);
     throw error;
   }
 };
