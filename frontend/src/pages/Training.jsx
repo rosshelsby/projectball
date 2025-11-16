@@ -74,34 +74,6 @@ function Training() {
         marginBottom: '30px'
       }}>
         <h1>Training Facilities</h1>
-        <button 
-          onClick={() => navigate('/dashboard')}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Back to Dashboard
-        </button>
-      </div>
-
-      {/* Budget Display */}
-      <div style={{ 
-        backgroundColor: '#007bff', 
-        color: 'white',
-        padding: '20px', 
-        borderRadius: '8px',
-        marginBottom: '30px',
-        textAlign: 'center'
-      }}>
-        <h2 style={{ margin: '0 0 10px 0' }}>{data.team.name}</h2>
-        <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
-          Budget: ${data.team.budget.toLocaleString()}
-        </p>
       </div>
 
       {/* Facilities Grid */}

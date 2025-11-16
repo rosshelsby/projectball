@@ -220,3 +220,129 @@ export const trainPlayer = async (playerId) => {
     throw error;
   }
 };
+
+// List a player for sale
+export const listPlayer = async (playerId, askingPrice) => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.post(`${API_URL}/transfers/list-player`,
+      { playerId, askingPrice },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error listing player:', error);
+    throw error;
+  }
+};
+
+// Delist a player
+export const delistPlayer = async (playerId) => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.post(`${API_URL}/transfers/delist-player`,
+      { playerId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error delisting player:', error);
+    throw error;
+  }
+};
+
+// Get transfer market
+export const getTransferMarket = async (filters = {}) => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const params = new URLSearchParams();
+    if (filters.position) params.append('position', filters.position);
+    if (filters.minRating) params.append('minRating', filters.minRating);
+    if (filters.maxRating) params.append('maxRating', filters.maxRating);
+    if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+
+    const response = await axios.get(`${API_URL}/transfers/market?${params}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching market:', error);
+    throw error;
+  }
+};
+
+// Buy a player
+export const buyPlayer = async (playerId) => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.post(`${API_URL}/transfers/buy-player`,
+      { playerId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error buying player:', error);
+    throw error;
+  }
+};
+
+// Get my listings
+export const getMyListings = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    const response = await axios.get(`${API_URL}/transfers/my-listings`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching listings:', error);
+    throw error;
+  }
+};

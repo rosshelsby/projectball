@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMyPlayers, trainPlayer } from '../services/api';
+import { getMyPlayers, trainPlayer, listPlayer, delistPlayer } from '../services/api';
 
 function Squad() {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ function Squad() {
   const [training, setTraining] = useState(null);
   const [sortBy, setSortBy] = useState('overall_rating');
   const [sortDesc, setSortDesc] = useState(true);
+  const [listing, setListing] = useState(null);
 
   useEffect(() => {
     loadPlayers();
@@ -71,6 +72,43 @@ function Squad() {
     }
   };
 
+  const handleList = async (playerId, playerName) => {
+    const price = prompt(`List ${playerName} for sale. Enter asking price ($):`);
+    
+    if (!price || isNaN(price) || parseInt(price) < 1000) {
+      alert('Invalid price. Minimum is $1,000');
+      return;
+    }
+    
+    setListing(playerId);
+    try {
+      await listPlayer(playerId, parseInt(price));
+      alert(`${playerName} listed for $${parseInt(price).toLocaleString()}`);
+      await loadPlayers();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to list player');
+    } finally {
+      setListing(null);
+    }
+  };
+
+  const handleDelist = async (playerId, playerName) => {
+    if (!confirm(`Remove ${playerName} from transfer market?`)) {
+      return;
+    }
+    
+    setListing(playerId);
+    try {
+      await delistPlayer(playerId);
+      alert(`${playerName} removed from market`);
+      await loadPlayers();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to delist player');
+    } finally {
+      setListing(null);
+    }
+  };
+
   const getPositionColor = (position) => {
     const colors = {
       GK: '#ffd700',
@@ -119,19 +157,6 @@ function Squad() {
         marginBottom: '30px'
       }}>
         <h1>My Squad</h1>
-        <button 
-          onClick={() => navigate('/dashboard')}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Back to Dashboard
-        </button>
       </div>
 
       {/* Position Filter */}
@@ -280,22 +305,60 @@ function Squad() {
                   ${player.value}M
                 </td>
                 <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                  <button
-                    onClick={() => handleTrain(player.id, `${player.first_name} ${player.last_name}`)}
-                    disabled={training === player.id}
-                    style={{
-                      padding: '6px 12px',
-                      backgroundColor: training === player.id ? '#ccc' : '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: training === player.id ? 'not-allowed' : 'pointer',
-                      fontSize: '12px',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {training === player.id ? '...' : 'Train'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => handleTrain(player.id, `${player.first_name} ${player.last_name}`)}
+                      disabled={training === player.id || player.is_listed}
+                      style={{
+                        padding: '6px 12px',
+                        backgroundColor: (training === player.id || player.is_listed) ? '#ccc' : '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: (training === player.id || player.is_listed) ? 'not-allowed' : 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      {training === player.id ? '...' : 'Train'}
+                    </button>
+                    
+                    {player.is_listed ? (
+                      <button
+                        onClick={() => handleDelist(player.id, `${player.first_name} ${player.last_name}`)}
+                        disabled={listing === player.id}
+                        style={{
+                          padding: '6px 12px',
+                          backgroundColor: listing === player.id ? '#ccc' : '#dc3545',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: listing === player.id ? 'not-allowed' : 'pointer',
+                          fontSize: '12px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Delist
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleList(player.id, `${player.first_name} ${player.last_name}`)}
+                        disabled={listing === player.id}
+                        style={{
+                          padding: '6px 12px',
+                          backgroundColor: listing === player.id ? '#ccc' : '#007bff',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: listing === player.id ? 'not-allowed' : 'pointer',
+                          fontSize: '12px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        List
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

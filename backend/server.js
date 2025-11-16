@@ -18,12 +18,14 @@ const authRoutes = require('./routes/auth');
 const teamRoutes = require('./routes/teams');
 const matchRoutes = require('./routes/matches');
 const trainingRoutes = require('./routes/training');
+const transferRoutes = require('./routes/transfers');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/training', trainingRoutes);
+app.use('/api/transfers', transferRoutes);
 
 // Test route - just to verify server works
 app.get('/api/health', (req, res) => {
