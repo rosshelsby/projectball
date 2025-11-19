@@ -7,6 +7,8 @@ import Squad from './pages/Squad';
 import Fixtures from './pages/Fixtures';
 import Training from './pages/Training';
 import TransferMarket from './pages/TransferMarket';
+import ScoutingHub from './pages/ScoutingHub';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
         <Route path="/fixtures" element={<Fixtures />} />
         <Route path="/training" element={<Training />} />
         <Route path="/market" element={<TransferMarket />} />
+        <Route path="/scout" element={<ScoutingHub />} />
+        <Route path="/profile/:userNumber" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       </Layout>

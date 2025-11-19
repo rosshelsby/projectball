@@ -9,12 +9,9 @@ const supabase = createClient(
   process.env.SUPABASE_KEY
 );
 
-// Training costs and cooldowns
 const TRAINING_COOLDOWN_HOURS = 24;
-const TRAINING_COST = 50000; // 50k per session
-const FACILITY_UPGRADE_BASE_COST = 1000000; // 1M for level 2, scales up
+const FACILITY_UPGRADE_BASE_COST = 1000000;
 
-// Get team's training facilities
 router.get('/facilities', verifyToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -29,7 +26,6 @@ router.get('/facilities', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'Team not found' });
     }
     
-    // Calculate upgrade costs
     const trainingGroundUpgradeCost = team.training_ground_level < 10 
       ? FACILITY_UPGRADE_BASE_COST * team.training_ground_level 
       : null;
@@ -66,17 +62,15 @@ router.get('/facilities', verifyToken, async (req, res) => {
   }
 });
 
-// Upgrade a facility
 router.post('/upgrade-facility', verifyToken, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { facilityType } = req.body; // 'training_ground' or 'medical_facility'
+    const { facilityType } = req.body;
     
     if (!['training_ground', 'medical_facility'].includes(facilityType)) {
       return res.status(400).json({ error: 'Invalid facility type' });
     }
     
-    // Get team
     const { data: team, error: teamError } = await supabase
       .from('teams')
       .select('*')
@@ -100,7 +94,6 @@ router.post('/upgrade-facility', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'Insufficient funds' });
     }
     
-    // Upgrade facility and deduct cost
     const { error: upgradeError } = await supabase
       .from('teams')
       .update({
@@ -126,17 +119,20 @@ router.post('/upgrade-facility', verifyToken, async (req, res) => {
   }
 });
 
-// Train a player
 router.post('/train-player', verifyToken, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { playerId } = req.body;
+    const { playerId, statToTrain } = req.body;
     
-    if (!playerId) {
-      return res.status(400).json({ error: 'Player ID required' });
+    if (!playerId || !statToTrain) {
+      return res.status(400).json({ error: 'Player ID and stat to train are required' });
     }
     
-    // Get team
+    const validStats = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical'];
+    if (!validStats.includes(statToTrain)) {
+      return res.status(400).json({ error: 'Invalid stat to train' });
+    }
+    
     const { data: team, error: teamError } = await supabase
       .from('teams')
       .select('id, budget, training_ground_level')
@@ -147,7 +143,6 @@ router.post('/train-player', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'Team not found' });
     }
     
-    // Get player
     const { data: player, error: playerError } = await supabase
       .from('players')
       .select('*')
@@ -159,7 +154,6 @@ router.post('/train-player', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'Player not found or not on your team' });
     }
     
-    // Check if player can be trained (cooldown)
     if (player.last_trained_at) {
       const lastTrained = new Date(player.last_trained_at);
       const now = new Date();
@@ -174,72 +168,75 @@ router.post('/train-player', verifyToken, async (req, res) => {
       }
     }
     
-    // Check budget
-    if (team.budget < TRAINING_COST) {
-      return res.status(400).json({ error: 'Insufficient funds for training' });
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const { data: trainingsToday, error: countError } = await supabase
+      .from('players')
+      .select('id')
+      .eq('team_id', team.id)
+      .gte('last_trained_at', today.toISOString());
+    
+    if (countError) throw countError;
+    
+    const alreadyTrainedToday = trainingsToday.some(p => p.id === playerId);
+    const currentDailyCount = alreadyTrainedToday ? trainingsToday.length - 1 : trainingsToday.length;
+    
+    if (currentDailyCount >= 5) {
+      return res.status(400).json({ 
+        error: 'Daily training limit reached (5 players per day)',
+        dailyLimit: 5,
+        used: currentDailyCount
+      });
     }
     
-    // Calculate stat improvement based on facility level
-    // Level 1 = +1, Level 5 = +2, Level 10 = +3
+    if (player[statToTrain] >= 99) {
+      return res.status(400).json({ error: `${statToTrain} is already at maximum (99)` });
+    }
+    
     const baseImprovement = 1;
     const facilityBonus = Math.floor(team.training_ground_level / 5);
     const totalImprovement = baseImprovement + facilityBonus;
     
-    // Choose random stat to improve (weighted by position)
-    const stats = ['pace', 'shooting', 'passing', 'defending', 'physical'];
-    const statToImprove = stats[Math.floor(Math.random() * stats.length)];
+    const newStatValue = Math.min(99, player[statToTrain] + totalImprovement);
+    const actualGain = newStatValue - player[statToTrain];
     
-    const newStatValue = Math.min(99, player[statToImprove] + totalImprovement);
-    const actualGain = newStatValue - player[statToImprove];
+    const allStats = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physical'];
+    let totalRating = 0;
+    allStats.forEach(stat => {
+      if (stat === statToTrain) {
+        totalRating += newStatValue;
+      } else {
+        totalRating += player[stat] || 0;
+      }
+    });
+    const newOverall = Math.min(99, Math.round(totalRating / allStats.length));
     
-    // Update overall rating (simple average of all stats)
-    const newOverall = Math.round(
-      (player.pace + player.shooting + player.passing + player.defending + player.physical + actualGain) / 5
-    );
-    
-    // Update player
     const { error: updateError } = await supabase
       .from('players')
       .update({
-        [statToImprove]: newStatValue,
-        overall_rating: Math.min(99, newOverall),
+        [statToTrain]: newStatValue,
+        overall_rating: newOverall,
         last_trained_at: new Date().toISOString(),
-        times_trained: player.times_trained + 1
+        times_trained: (player.times_trained || 0) + 1
       })
       .eq('id', playerId);
     
-    if (updateError) {
-      throw updateError;
-    }
-    
-    // Deduct training cost from budget
-    await supabase
-      .from('teams')
-      .update({ budget: team.budget - TRAINING_COST })
-      .eq('id', team.id);
-    
-    // Record training session
-    await supabase
-      .from('training_sessions')
-      .insert([{
-        player_id: playerId,
-        team_id: team.id,
-        stat_improved: statToImprove,
-        amount_gained: actualGain
-      }]);
+    if (updateError) throw updateError;
     
     res.json({
       message: 'Training successful',
       player: {
         name: `${player.first_name} ${player.last_name}`,
-        statImproved: statToImprove,
-        oldValue: player[statToImprove],
+        statImproved: statToTrain,
+        oldValue: player[statToTrain],
         newValue: newStatValue,
         gain: actualGain,
-        newOverall: Math.min(99, newOverall)
+        oldOverall: player.overall_rating,
+        newOverall: newOverall
       },
-      cost: TRAINING_COST,
-      remainingBudget: team.budget - TRAINING_COST
+      dailyTrainingsUsed: currentDailyCount + 1,
+      dailyLimit: 5
     });
     
   } catch (error) {

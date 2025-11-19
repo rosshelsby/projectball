@@ -249,12 +249,16 @@ router.get('/verify', async (req, res) => {
     // Get fresh user data from database
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('id, email, username')
+      .select('id, email, username, user_number')
       .eq('id', decoded.userId)
       .single();
 
     if (userError || !user) {
-      return res.status(401).json({ error: 'User not found' });
+      const { data: team } = await supabase
+      .from('teams')
+      .select('id, team_name, budget')
+      .eq('user_id', user.id)
+      .single();
     }
 
     // Get user's team
@@ -273,13 +277,14 @@ router.get('/verify', async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        username: user.username
+        username: user.username,
+        userNumber: user.user_number
       },
-      team: {
+      team: team ? {
         id: team.id,
         teamName: team.team_name,
         budget: team.budget
-      }
+      } : null
     });
 
   } catch (error) {

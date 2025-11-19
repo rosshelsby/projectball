@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMyFixtures, getLeagueTable, simulateMatchday, getNextScheduledMatch } from '../services/api';
+import { getAlphaFixtures, playMatch, getLeagueTable } from '../services/api';
 
 function Fixtures() {
   const navigate = useNavigate();
-  const [fixtures, setFixtures] = useState(null);
+  const [data, setData] = useState(null);
   const [table, setTable] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [simulating, setSimulating] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const [error, setError] = useState('');
-  const [nextMatch, setNextMatch] = useState(null);
+  const [matchResult, setMatchResult] = useState(null);
+  
+  // Match selection
+  const [selectedOpponent, setSelectedOpponent] = useState('');
+  const [isHome, setIsHome] = useState(true);
 
   useEffect(() => {
     loadData();
@@ -17,21 +21,17 @@ function Fixtures() {
 
   const loadData = async () => {
     try {
-      const fixturesData = await getMyFixtures();
-      setFixtures(fixturesData);
+      const fixturesData = await getAlphaFixtures();
+      setData(fixturesData);
       
-      // Fetch league table using the league ID
-      if (fixturesData.league && fixturesData.league.id) {
+      // Fetch league table
+      if (fixturesData.league?.id) {
         const tableData = await getLeagueTable(fixturesData.league.id);
-        setTable(tableData.table);
+        setTable(tableData.table || []);
       }
-
-      // Fetch next match info
-      const nextMatchData = await getNextScheduledMatch();
-      setNextMatch(nextMatchData);
       
     } catch (err) {
-      console.error('Failed to load data:', err);
+      console.error('Failed to load:', err);
       setError('Failed to load data');
       
       if (err.response?.status === 401) {
@@ -43,71 +43,58 @@ function Fixtures() {
     }
   };
 
-  const handleSimulate = async () => {
-    if (!fixtures || !fixtures.league.id) return;
+  const handlePlayMatch = async () => {
+    if (!selectedOpponent) {
+      return;
+    }
     
-    setSimulating(true);
+    if (data.matchesRemaining <= 0) {
+      return;
+    }
+    
+    setPlaying(true);
+    setMatchResult(null); // Clear previous result
+    
     try {
-      await simulateMatchday(fixtures.league.id);
-      // Reload data after simulation
+      const result = await playMatch(selectedOpponent, isHome);
+      
+      // Set the result to display
+      setMatchResult(result);
+      
+      // Reload data
       await loadData();
-      alert('Matchday simulated successfully!');
+      setSelectedOpponent('');
+      
     } catch (err) {
-      console.error('Simulation failed:', err);
-      alert('Failed to simulate matchday');
+      console.error('Match failed:', err);
+      setMatchResult({
+        error: true,
+        message: err.response?.data?.message || err.response?.data?.error || 'Failed to play match'
+      });
     } finally {
-      setSimulating(false);
+      setPlaying(false);
     }
   };
 
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '50px', fontFamily: 'sans-serif' }}>
-        <h2>Loading fixtures...</h2>
+        <h2>Loading...</h2>
       </div>
     );
   }
 
-  if (error || !fixtures) {
+  if (error || !data) {
     return (
       <div style={{ textAlign: 'center', padding: '50px', fontFamily: 'sans-serif' }}>
-        <h2 style={{ color: 'red' }}>{error || 'No data available'}</h2>
+        <h2 style={{ color: 'red' }}>{error || 'Error'}</h2>
       </div>
     );
   }
 
   return (
-    <div style={{ 
-      maxWidth: '1400px', 
-      margin: '20px auto', 
-      padding: '20px',
-      fontFamily: 'sans-serif'
-    }}>
-      {/* Header */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: '30px'
-      }}>
-        <h1>Fixtures & Results</h1>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button 
-            onClick={handleSimulate}
-            disabled={simulating || fixtures.upcoming.length === 0}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: simulating ? '#ccc' : '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: simulating ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {simulating ? 'Simulating...' : 'Simulate Next Matchday'}
-          </button>
-        </div>
-      </div>
+    <div style={{ maxWidth: '1400px', margin: '20px auto', padding: '20px', fontFamily: 'sans-serif' }}>
+      <h1>Fixtures - ALPHA Testing</h1>
 
       {/* League Info */}
       <div style={{ 
@@ -118,100 +105,209 @@ function Fixtures() {
         marginBottom: '30px',
         textAlign: 'center'
       }}>
-        <h2 style={{ margin: '0 0 10px 0' }}>{fixtures.league.name}</h2>
-        <p style={{ margin: 0, fontSize: '18px' }}>{fixtures.team.team_name}</p>
+        <h2 style={{ margin: '0 0 10px 0' }}>{data.league.name}</h2>
+        <p style={{ margin: 0, fontSize: '18px' }}>{data.team.team_name}</p>
       </div>
 
-      {/* Auto-Simulation Status */}
-      {nextMatch && nextMatch.hasMatches && (
-        <div style={{ 
-          backgroundColor: nextMatch.isOverdue ? '#ffc107' : '#28a745',
-          color: nextMatch.isOverdue ? '#000' : '#fff',
-          padding: '15px', 
-          borderRadius: '8px',
-          marginBottom: '30px',
-          textAlign: 'center'
-        }}>
-          <strong>
-            {nextMatch.isOverdue 
-              ? `⚠️ Matchday ${nextMatch.matchday} is overdue - will simulate within 5 minutes`
-              : `⏰ Next matchday (${nextMatch.matchday}) in ${nextMatch.hoursUntil}h ${nextMatch.minutesUntil % 60}m`
-            }
-          </strong>
-        </div>
-      )}
-      
-      {nextMatch && !nextMatch.hasMatches && (
-        <div style={{ 
-          backgroundColor: '#6c757d',
-          color: '#fff',
-          padding: '15px', 
-          borderRadius: '8px',
-          marginBottom: '30px',
-          textAlign: 'center'
-        }}>
-          <strong>🏆 Season Complete!</strong>
-        </div>
-      )}
-
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-        {/* Left Column - Fixtures */}
+        {/* Left Column - Play Match */}
         <div>
-          {/* Upcoming Fixtures */}
-          <div style={{ marginBottom: '40px' }}>
-            <h2>Upcoming Fixtures</h2>
-            {fixtures.upcoming.length === 0 ? (
-              <p style={{ color: '#666' }}>No upcoming fixtures - season complete!</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {fixtures.upcoming.slice(0, 10).map(match => {
-                  const isHome = match.home_team.id === fixtures.team.id;
-                  const venue = isHome ? 'Home' : 'Away';
-                  
-                  return (
-                    <div 
-                      key={match.id}
-                      style={{
-                        border: '1px solid #dee2e6',
-                        borderRadius: '8px',
-                        padding: '15px',
-                        backgroundColor: '#0f3a66ff'
-                      }}
-                    >
-                      <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>
-                        Matchday {match.matchday} • {new Date(match.scheduled_date).toLocaleDateString('en-GB')}
-                      </div>
-                      <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                        {match.home_team.team_name} vs {match.away_team.team_name}
-                      </div>
-                      <div style={{ 
-                        fontSize: '12px', 
-                        color: isHome ? '#28a745' : '#007bff',
-                        marginTop: '5px',
-                        fontWeight: 'bold'
-                      }}>
-                        ({venue})
-                      </div>
-                    </div>
-                  );
-                })}
+          {/* Play Match Section */}
+          <div style={{ 
+            border: '2px solid #28a745',
+            borderRadius: '8px',
+            padding: '25px',
+            backgroundColor: '#0f3a66ff',
+            marginBottom: '30px'
+          }}>
+            <h2 style={{ marginTop: 0, color: '#28a745' }}>⚽ Play a Match</h2>
+            
+            {/* Matches Remaining Counter */}
+            <div style={{
+              backgroundColor: data.matchesRemaining > 0 ? '#28a745' : '#dc3545',
+              color: 'white',
+              padding: '15px',
+              borderRadius: '8px',
+              marginBottom: '20px',
+              textAlign: 'center',
+              fontSize: '18px',
+              fontWeight: 'bold'
+            }}>
+              {data.matchesRemaining}/5 Matches Remaining Today
+            </div>
+            
+            {/* Opponent Selection */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                Select Opponent:
+              </label>
+              <select
+                value={selectedOpponent}
+                onChange={(e) => setSelectedOpponent(e.target.value)}
+                disabled={data.matchesRemaining <= 0}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '16px',
+                  borderRadius: '4px',
+                  border: '1px solid #ccc',
+                  backgroundColor: data.matchesRemaining <= 0 ? '#0f3a66ff' : '#4090e0ff'
+                }}
+              >
+                <option value="">-- Choose Team --</option>
+                {data.opponents && data.opponents.map(opp => (
+                  <option key={opp.id} value={opp.id}>
+                    {opp.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Home/Away Toggle */}
+            <div style={{ marginBottom: '25px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                Venue:
+              </label>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => setIsHome(true)}
+                  disabled={data.matchesRemaining <= 0}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    backgroundColor: isHome ? '#007bff' : '#0a427aff',
+                    color: isHome ? 'white' : '#000',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: data.matchesRemaining <= 0 ? 'not-allowed' : 'pointer',
+                    fontWeight: 'bold',
+                    fontSize: '16px'
+                  }}
+                >
+                  🏠 Home
+                </button>
+                <button
+                  onClick={() => setIsHome(false)}
+                  disabled={data.matchesRemaining <= 0}
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    backgroundColor: !isHome ? '#007bff' : '#134372ff',
+                    color: !isHome ? 'white' : '#000',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: data.matchesRemaining <= 0 ? 'not-allowed' : 'pointer',
+                    fontWeight: 'bold',
+                    fontSize: '16px'
+                  }}
+                >
+                  ✈️ Away
+                </button>
+              </div>
+              {isHome && (
+                <p style={{ fontSize: '14px', color: '#28a745', marginTop: '8px', marginBottom: 0 }}>
+                  ✓ Home advantage (+5 rating bonus)
+                </p>
+              )}
+            </div>
+            
+            {/* Play Button */}
+            <button
+              onClick={handlePlayMatch}
+              disabled={playing || !selectedOpponent || data.matchesRemaining <= 0}
+              style={{
+                width: '100%',
+                padding: '15px',
+                backgroundColor: (playing || !selectedOpponent || data.matchesRemaining <= 0) ? '#0f3a66ff' : '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: (playing || !selectedOpponent || data.matchesRemaining <= 0) ? 'not-allowed' : 'pointer',
+                fontSize: '18px',
+                fontWeight: 'bold'
+              }}
+            >
+              {playing ? 'Simulating...' : 
+               data.matchesRemaining <= 0 ? 'Daily Limit Reached' :
+               !selectedOpponent ? 'Select Opponent' : 
+               'Play Match'}
+            </button>
+
+            {/* Match Result Display */}
+            {matchResult && !matchResult.error && (
+              <div style={{
+                marginTop: '20px',
+                padding: '20px',
+                borderRadius: '8px',
+                backgroundColor: matchResult.match.userResult === 'W' ? '#0f3a66ff' : 
+                                 matchResult.match.userResult === 'L' ? '#0f3a66ff' : 
+                                 '#fff3cd',
+                border: `2px solid ${matchResult.match.userResult === 'W' ? '#28a745' : 
+                                     matchResult.match.userResult === 'L' ? '#dc3545' : 
+                                     '#ffc107'}`
+              }}>
+                <div style={{ 
+                  fontSize: '24px', 
+                  fontWeight: 'bold', 
+                  marginBottom: '15px',
+                  color: matchResult.match.userResult === 'W' ? '#155724' : 
+                         matchResult.match.userResult === 'L' ? '#721c24' : 
+                         '#856404'
+                }}>
+                  {matchResult.match.userResult === 'W' ? '✅ WIN!' : 
+                   matchResult.match.userResult === 'L' ? '❌ LOSS' : 
+                   '🤝 DRAW'}
+                </div>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '10px', color: '#000' }}>
+                  {matchResult.match.homeTeam} {matchResult.match.homeScore} - {matchResult.match.awayScore} {matchResult.match.awayTeam}
+                </div>
+                <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>
+                  Venue: {matchResult.match.isHome ? '🏠 Home' : '✈️ Away'}
+                </div>
+                <div style={{ fontSize: '14px', color: '#666' }}>
+                  Matches remaining today: {matchResult.matchesRemaining}
+                </div>
+              </div>
+            )}
+
+            {/* Error Display */}
+            {matchResult && matchResult.error && (
+              <div style={{
+                marginTop: '20px',
+                padding: '15px',
+                borderRadius: '8px',
+                backgroundColor: '#0f3a66ff',
+                border: '2px solid #dc3545',
+                color: '#721c24'
+              }}>
+                {matchResult.message}
               </div>
             )}
           </div>
-
-          {/* Results */}
+          
+          {/* Match History */}
           <div>
-            <h2>Recent Results</h2>
-            {fixtures.played.length === 0 ? (
-              <p style={{ color: '#666' }}>No matches played yet</p>
+            <h2>Match History</h2>
+            {!data.matchHistory || data.matchHistory.length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '50px',
+                backgroundColor: '#0f3a66ff',
+                borderRadius: '8px',
+                color: '#666'
+              }}>
+                <p>No matches played yet. Play your first match above!</p>
+              </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {fixtures.played.slice(-5).reverse().map(match => {
-                  const isHome = match.home_team.id === fixtures.team.id;
+                {data.matchHistory.slice(0, 10).map(match => {
+                  const isHome = match.home_team_id === data.team.id;
                   const myScore = isHome ? match.home_score : match.away_score;
                   const theirScore = isHome ? match.away_score : match.home_score;
                   const result = myScore > theirScore ? 'W' : myScore < theirScore ? 'L' : 'D';
                   const resultColor = result === 'W' ? '#28a745' : result === 'L' ? '#dc3545' : '#ffc107';
+                  const opponent = isHome ? match.away_team.team_name : match.home_team.team_name;
+                  const venue = isHome ? 'H' : 'A';
                   
                   return (
                     <div 
@@ -228,10 +324,10 @@ function Fixtures() {
                     >
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>
-                          Matchday {match.matchday}
+                          vs {opponent} ({venue})
                         </div>
-                        <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                          {match.home_team.team_name} {match.home_score} - {match.away_score} {match.away_team.team_name}
+                        <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                          {myScore} - {theirScore}
                         </div>
                       </div>
                       <div style={{ 
@@ -242,7 +338,7 @@ function Fixtures() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#0f3a66ff',
+                        color: 'white',
                         fontSize: '20px',
                         fontWeight: 'bold'
                       }}>
@@ -265,7 +361,7 @@ function Fixtures() {
             <div style={{ 
               border: '1px solid #dee2e6', 
               borderRadius: '8px',
-              backgroundColor: '#2266aaff',
+              backgroundColor: '#0f3a66ff',
               overflow: 'hidden'
             }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -284,14 +380,14 @@ function Fixtures() {
                   </tr>
                 </thead>
                 <tbody>
-                  {table.map((team,) => {
-                    const isMyTeam = team.teamId === fixtures.team.id;
+                  {table.map((team) => {
+                    const isMyTeam = team.teamId === data.team.id;
                     return (
                       <tr 
                         key={team.teamId}
                         style={{ 
                           borderTop: '1px solid #dee2e6',
-                          backgroundColor: isMyTeam ? '#18b153ff' : '#2266aaff',
+                          backgroundColor: isMyTeam ? '#0f3a66ff' : '#206db9ff',
                           fontWeight: isMyTeam ? 'bold' : 'normal'
                         }}
                       >

@@ -22,8 +22,8 @@ async function setupLeagues() {
   console.log(`Found ${teams.length} teams`);
   
   // 2. Create leagues based on number of teams
-  // Each league has max 10 teams
-  const teamsPerLeague = 10;
+  // Each league has max 12 teams
+  const teamsPerLeague = 12;
   const numLeagues = Math.ceil(teams.length / teamsPerLeague);
   
   console.log(`Creating ${numLeagues} league(s)...`);

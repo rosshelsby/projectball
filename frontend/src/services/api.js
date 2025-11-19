@@ -197,7 +197,7 @@ export const upgradeFacility = async (facilityType) => {
 };
 
 // Train a player
-export const trainPlayer = async (playerId) => {
+export const trainPlayer = async (playerId, statToTrain) => {
   try {
     const token = localStorage.getItem('token');
     
@@ -206,7 +206,7 @@ export const trainPlayer = async (playerId) => {
     }
 
     const response = await axios.post(`${API_URL}/training/train-player`,
-      { playerId },
+      { playerId, statToTrain },
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -345,4 +345,105 @@ export const getMyListings = async () => {
     console.error('Error fetching listings:', error);
     throw error;
   }
+};
+
+// ========== SCOUTING HUB ==========
+export const getScoutingOptions = async () => {
+  const token = localStorage.getItem('token');
+  const response = await axios.get(`${API_URL}/scout/scouting-options`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const startScoutingMission = async (nationality) => {
+  const token = localStorage.getItem('token');
+  const response = await axios.post(
+    `${API_URL}/scout/start-scouting`,
+    { nationality },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};
+
+export const getMyMissions = async () => {
+  const token = localStorage.getItem('token');
+  const response = await axios.get(`${API_URL}/scout/my-missions`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const collectMission = async (missionId) => {
+  const token = localStorage.getItem('token');
+  const response = await axios.post(
+    `${API_URL}/scout/collect-mission`,
+    { missionId },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};
+
+export const getMyProspects = async () => {
+  const token = localStorage.getItem('token');
+  const response = await axios.get(`${API_URL}/scout/my-prospects`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const promoteProspect = async (prospectId) => {
+  const token = localStorage.getItem('token');
+  const response = await axios.post(
+    `${API_URL}/scout/promote-prospect`,
+    { prospectId },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return response.data;
+};
+
+// ALPHA: Get fixtures with opponents and match limit
+export const getAlphaFixtures = async () => {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('No token found');
+  }
+
+  const response = await axios.get(`${API_URL}/matches/alpha-fixtures`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  
+  return response.data;
+};
+
+// ALPHA: Play a match
+export const playMatch = async (opponentTeamId, isHome) => {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Error('No token found');
+  }
+
+  const response = await axios.post(
+    `${API_URL}/matches/play-match`,
+    { opponentTeamId, isHome },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+  
+  return response.data;
+};
+
+export const getRecentResults = async () => {
+  const token = localStorage.getItem('token');
+  const response = await axios.get(`${API_URL}/matches/recent-results`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
 };

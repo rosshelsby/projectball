@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMyPlayers, trainPlayer, listPlayer, delistPlayer } from '../services/api';
+import { getMyPlayers, listPlayer, delistPlayer } from '../services/api';
 
 function Squad() {
   const navigate = useNavigate();
@@ -9,7 +9,6 @@ function Squad() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedPosition, setSelectedPosition] = useState('ALL');
-  const [training, setTraining] = useState(null);
   const [sortBy, setSortBy] = useState('overall_rating');
   const [sortDesc, setSortDesc] = useState(true);
   const [listing, setListing] = useState(null);
@@ -56,19 +55,6 @@ function Squad() {
     } else {
       setSortBy(column);
       setSortDesc(true);
-    }
-  };
-
-  const handleTrain = async (playerId, playerName) => {
-    setTraining(playerId);
-    try {
-      const result = await trainPlayer(playerId);
-      alert(`${playerName} training successful!\n${result.player.statImproved.toUpperCase()}: ${result.player.oldValue} → ${result.player.newValue} (+${result.player.gain})\nNew Overall: ${result.player.newOverall}`);
-      await loadPlayers();
-    } catch (err) {
-      alert(err.response?.data?.error || 'Training failed');
-    } finally {
-      setTraining(null);
     }
   };
 
@@ -306,22 +292,6 @@ function Squad() {
                 </td>
                 <td style={{ padding: '12px 8px', textAlign: 'center' }}>
                   <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
-                    <button
-                      onClick={() => handleTrain(player.id, `${player.first_name} ${player.last_name}`)}
-                      disabled={training === player.id || player.is_listed}
-                      style={{
-                        padding: '6px 12px',
-                        backgroundColor: (training === player.id || player.is_listed) ? '#ccc' : '#28a745',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: (training === player.id || player.is_listed) ? 'not-allowed' : 'pointer',
-                        fontSize: '12px',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      {training === player.id ? '...' : 'Train'}
-                    </button>
                     
                     {player.is_listed ? (
                       <button
