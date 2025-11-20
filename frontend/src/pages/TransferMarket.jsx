@@ -57,26 +57,6 @@ function TransferMarket() {
     }
   };
 
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  };
-
-  const applyFilters = () => {
-    setLoading(true);
-    loadMarket();
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      position: '',
-      minRating: '',
-      maxRating: '',
-      maxPrice: '',
-      sortBy: 'listed_at'
-    });
-    setLoading(true);
-    loadMarket();
-  };
 
   const getPositionColor = (position) => {
     const colors = {
@@ -112,237 +92,160 @@ function TransferMarket() {
   }
 
   return (
-    <div style={{ 
-      maxWidth: '1400px', 
-      margin: '20px auto', 
-      padding: '20px',
-      fontFamily: 'sans-serif'
+  <div style={{
+    minHeight: 'calc(100vh - 142px)',
+    backgroundColor: 'transparent',
+    padding: '1px 0'
+  }}>
+    {/* Single Module Container - Same width as dashboard */}
+    <div style={{
+      maxWidth: '1200px',
+      margin: '0 auto'
     }}>
-      <h1>Transfer Market</h1>
-
-      {/* Filters */}
+      
+      {/* Market Module */}
       <div style={{
-        backgroundColor: '#0f3a66ff',
-        padding: '20px',
-        borderRadius: '8px',
-        marginBottom: '20px'
+        backgroundColor: '#1a1a1a',
+        padding: '0px',
+        borderRadius: '0px'
       }}>
-        <h3 style={{ marginTop: 0 }}>Filters</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>Position</label>
-            <select
-              value={filters.position}
-              onChange={(e) => handleFilterChange('position', e.target.value)}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            >
-              <option value="">All Positions</option>
-              <option value="GK">Goalkeeper</option>
-              <option value="DEF">Defender</option>
-              <option value="MID">Midfielder</option>
-              <option value="FWD">Forward</option>
-            </select>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>Min Rating</label>
-            <input
-              type="number"
-              value={filters.minRating}
-              onChange={(e) => handleFilterChange('minRating', e.target.value)}
-              placeholder="e.g. 70"
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>Max Rating</label>
-            <input
-              type="number"
-              value={filters.maxRating}
-              onChange={(e) => handleFilterChange('maxRating', e.target.value)}
-              placeholder="e.g. 85"
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>Max Price ($)</label>
-            <input
-              type="number"
-              value={filters.maxPrice}
-              onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-              placeholder="e.g. 500000"
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '14px' }}>Sort By</label>
-            <select
-              value={filters.sortBy}
-              onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-            >
-              <option value="listed_at">Recently Listed</option>
-              <option value="price">Price (Low to High)</option>
-              <option value="rating">Rating (High to Low)</option>
-            </select>
-          </div>
-        </div>
-
-        <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
-          <button
-            onClick={applyFilters}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            Apply Filters
-          </button>
-          <button
-            onClick={clearFilters}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Clear
-          </button>
-        </div>
-      </div>
-
-      {/* Market Stats */}
-      <div style={{
-        backgroundColor: '#0f3a66ff',
-        padding: '15px',
-        borderRadius: '8px',
-        marginBottom: '20px',
-        textAlign: 'center'
-      }}>
-        <strong>{players.length} players available</strong>
-      </div>
-
-      {/* Players Table */}
-      {players.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '50px', color: '#666' }}>
-          <h3>No players available</h3>
-          <p>Check back later or adjust your filters</p>
-        </div>
-      ) : (
+        
+        {/* Players Table */}
         <div style={{ 
-          overflowX: 'auto',
-          border: '1px solid #dee2e6',
-          borderRadius: '8px',
-          backgroundColor: '#0f3a66ff'
+          border: '1px solid #424242ff',
+          borderRadius: '0px',
+          backgroundColor: '#1a1a1a',
+          overflow: 'auto'
         }}>
           <table style={{ 
             width: '100%', 
             borderCollapse: 'collapse',
-            minWidth: '1000px'
+            fontSize: '12px'
           }}>
             <thead>
-              <tr style={{ backgroundColor: '#0f3a66ff', borderBottom: '2px solid #dee2e6' }}>
-                <th style={{ padding: '12px 8px', textAlign: 'left' }}>POS</th>
-                <th style={{ padding: '12px 8px', textAlign: 'left' }}>NAME</th>
-                <th style={{ padding: '12px 8px', textAlign: 'center' }}>AGE</th>
-                <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 'bold' }}>OVR</th>
-                <th style={{ padding: '12px 8px', textAlign: 'center' }}>PAC</th>
-                <th style={{ padding: '12px 8px', textAlign: 'center' }}>SHO</th>
-                <th style={{ padding: '12px 8px', textAlign: 'center' }}>PAS</th>
-                <th style={{ padding: '12px 8px', textAlign: 'center' }}>DEF</th>
-                <th style={{ padding: '12px 8px', textAlign: 'center' }}>PHY</th>
-                <th style={{ padding: '12px 8px', textAlign: 'left' }}>SELLER</th>
-                <th style={{ padding: '12px 8px', textAlign: 'center' }}>PRICE</th>
-                <th style={{ padding: '12px 8px', textAlign: 'center' }}>ACTION</th>
+              <tr style={{ borderBottom: '1px solid #8b8b8bff' }}>
+                <th style={{ padding: '4px 4px', textAlign: 'left', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  POS
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'left', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  NAME
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  AGE
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  OVR
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  PAC
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  SHO
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  PAS
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  DEF
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  PHY
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'left', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  SELLER
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  PRICE
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999' }}>
+                  ACT
+                </th>
               </tr>
             </thead>
             <tbody>
-              {players.map((player, index) => (
+              {players.map((player) => (
                 <tr 
                   key={player.id}
                   style={{ 
-                    borderBottom: '1px solid #dee2e6',
-                    backgroundColor: index % 2 === 0 ? '#367dc4ff' : '#f8f9fa'
+                    borderBottom: '1px solid #333',
+                    backgroundColor: 'transparent',
+                    color: '#fff'
                   }}
                 >
-                  <td style={{ padding: '12px 8px' }}>
+                  <td style={{ padding: '4px 4px', borderRight: '1px solid #333' }}>
                     <span style={{
                       display: 'inline-block',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
+                      padding: '2px 6px',
+                      borderRadius: '3px',
                       backgroundColor: getPositionColor(player.position),
                       color: 'white',
                       fontWeight: 'bold',
-                      fontSize: '12px'
+                      fontSize: '11px'
                     }}>
                       {player.position}
                     </span>
                   </td>
-                  <td style={{ padding: '12px 8px', fontWeight: 'bold' }}>
-                    {player.name}
+                  <td style={{ padding: '4px 4px', borderRight: '1px solid #333', fontWeight: 'bold' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px'}}>
+                      <img 
+                        src="/flags/england.png"
+                        alt="flag"
+                        style={{ width: '16px', height: '11px'}}
+                      />
+                      <span>{player.name}</span>
+                    </div>
                   </td>
-                  <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                  <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
                     {player.age}
                   </td>
                   <td style={{ 
-                    padding: '12px 8px', 
-                    textAlign: 'center', 
+                    padding: '4px 4px', 
+                    textAlign: 'center',
+                    borderRight: '1px solid #333',
                     fontWeight: 'bold',
-                    fontSize: '18px',
                     color: getRatingColor(player.overallRating)
                   }}>
                     {player.overallRating}
                   </td>
-                  <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                  <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
                     {player.stats.pace}
                   </td>
-                  <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                  <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
                     {player.stats.shooting}
                   </td>
-                  <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                  <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
                     {player.stats.passing}
                   </td>
-                  <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                  <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
                     {player.stats.defending}
                   </td>
-                  <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                  <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
                     {player.stats.physical}
                   </td>
-                  <td style={{ padding: '12px 8px', fontSize: '14px', color: '#666' }}>
+                  <td style={{ padding: '4px 4px', borderRight: '1px solid #333', fontSize: '11px' }}>
                     {player.sellerTeam}
                   </td>
                   <td style={{ 
-                    padding: '12px 8px', 
+                    padding: '4px 4px', 
                     textAlign: 'center',
-                    fontWeight: 'bold',
-                    fontSize: '16px',
-                    color: '#28a745'
+                    borderRight: '1px solid #333',
+                    color: '#28a745',
+                    fontWeight: 'bold'
                   }}>
-                    ${player.askingPrice.toLocaleString()}
+                    ${(player.askingPrice / 1000000).toFixed(1)}M
                   </td>
-                  <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                  <td style={{ padding: '4px 4px', textAlign: 'center' }}>
                     <button
                       onClick={() => handleBuy(player.id, player.name, player.askingPrice)}
                       disabled={buying === player.id}
                       style={{
-                        padding: '6px 12px',
-                        backgroundColor: buying === player.id ? '#ccc' : '#28a745',
+                        padding: '4px 8px',
+                        backgroundColor: buying === player.id ? '#666' : '#28a745',
                         color: 'white',
                         border: 'none',
-                        borderRadius: '4px',
+                        borderRadius: '3px',
                         cursor: buying === player.id ? 'not-allowed' : 'pointer',
-                        fontSize: '12px',
+                        fontSize: '11px',
                         fontWeight: 'bold'
                       }}
                     >
@@ -354,9 +257,17 @@ function TransferMarket() {
             </tbody>
           </table>
         </div>
-      )}
+
+        {players.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '50px', color: '#666' }}>
+            <h3>No players available</h3>
+          </div>
+        )}
+
+      </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default TransferMarket;

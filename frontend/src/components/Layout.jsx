@@ -158,7 +158,7 @@ function Layout({ children }) {
       backgroundRepeat: 'no-repeat' 
       }}>
           <div style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
@@ -409,10 +409,8 @@ function Layout({ children }) {
           justifyContent: 'center',
           gap: '0',
           padding: '0.5px 0',
-          background: `
-  repeating-linear-gradient(90deg, transparent, transparent 2px, #242424 2px, #242424 4px),
-  linear-gradient(180deg, #0a0a0a, #1a1a1a, #0a0a0a)
-`
+          
+          
         }}>
           {[
             { path: '/dashboard', hasIcon: true, icon: 'dashboard' },

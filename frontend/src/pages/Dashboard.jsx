@@ -127,16 +127,16 @@ useEffect(() => {
 
   return (
     <div style={{
+      minHeight: 'calc(100vh - 142px)',
       backgroundColor: 'transparent',
-      padding: '0px'
+      padding: '1px 0'
     }}>
       {/* Grid Container */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '300px 600px 300px',
-        gridTemplateRows: 'repeat(2, 1fr)',
+        gridTemplateRows: '388px 450px',
         gap: '2px',
-        height: 'calc(100vh - 142px)',
         maxWidth: '1200px',
         margin: '0 auto'
       }}>
@@ -167,7 +167,7 @@ useEffect(() => {
             paddingLeft: '16px', 
             paddingTop: '8px', 
             borderBottom: '1px solid #8b8b8bff', 
-            background: 'linear-gradient(to bottom, #363636ff, #000000ff)' 
+            background: 'linear-gradient(to bottom, #313131ff, #181818ff)' 
             }}>
             League Table
           </h2>
