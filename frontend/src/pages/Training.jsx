@@ -141,93 +141,105 @@ function Training() {
   }
 
   return (
-    <div style={{ 
-      maxWidth: '1400px', 
-      margin: '20px auto', 
-      padding: '20px',
-      fontFamily: 'sans-serif'
+  <div style={{
+    minHeight: 'calc(100vh - 142px)',
+    backgroundColor: 'transparent',
+    padding: '1px 0'
+  }}>
+    {/* Single Module Container - Same width as dashboard */}
+    <div style={{
+      maxWidth: '1200px',
+      margin: '0 auto'
     }}>
-      <div style={{ 
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '30px' 
-      }}>
-        <h1>Training Center</h1>
-        <div style={{
-          backgroundColor: dailyTrainingsUsed >= DAILY_TRAINING_LIMIT ? '#dc3545' : '#ffc107',
-          color: dailyTrainingsUsed >= DAILY_TRAINING_LIMIT ? '#fff' : '#000',
-          padding: '10px 15px',
-          borderRadius: '4px',
-          fontWeight: 'bold',
-          fontSize: '16px'
-        }}>
-          Daily Training: {dailyTrainingsUsed} / {DAILY_TRAINING_LIMIT}
-        </div>
-      </div>
-
+      
+      {/* Training Module with Grid */}
       <div style={{
-        backgroundColor: '#0f3a66ff',
-        border: '2px solid #28a745',
-        borderRadius: '8px',
-        padding: '25px',
-        marginBottom: '30px'
+        backgroundColor: '#1a1a1a',
+        padding: '0px',
+        borderRadius: '0px',
+        display: 'grid',
+        gridTemplateColumns: '400px 800px',
+        gap: '0px'
       }}>
+        
+        {/* Left Column - Training Facilities (400px) */}
         <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: '1fr auto', 
-          gap: '20px',
-          alignItems: 'center'
+          border: '1px solid #424242ff',
+          borderRight: 'none',
+          backgroundColor: '#1a1a1a',
+          padding: '20px'
         }}>
-          <div>
-            <h2 style={{ margin: '0 0 15px 0', color: '#28a745' }}>🏟️ Training Ground</h2>
-            <div style={{ fontSize: '32px', marginBottom: '10px', fontWeight: 'bold', color: '#28a745' }}>
+          {/* Daily Training Counter */}
+          <div style={{
+            backgroundColor: dailyTrainingsUsed >= DAILY_TRAINING_LIMIT ? '#dc3545' : '#28a745',
+            color: '#fff',
+            padding: '12px',
+            borderRadius: '4px',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            textAlign: 'center',
+            marginBottom: '20px'
+          }}>
+            Training: {dailyTrainingsUsed} / {DAILY_TRAINING_LIMIT}
+          </div>
+
+          {/* Training Ground */}
+          <div style={{
+            border: '2px solid #28a745',
+            borderRadius: '8px',
+            padding: '20px',
+            marginBottom: '20px',
+            backgroundColor: '#222'
+          }}>
+            <h3 style={{ margin: '0 0 10px 0', color: '#28a745', fontSize: '16px' }}>
+              🏟️ Training Ground
+            </h3>
+            <div style={{ fontSize: '28px', marginBottom: '8px', fontWeight: 'bold', color: '#28a745' }}>
               Level {facilities?.facilities.trainingGround.level || 1}
             </div>
-            <div style={{ fontSize: '14px', color: '#ccc', marginBottom: '15px' }}>
+            <div style={{ fontSize: '12px', color: '#999', marginBottom: '15px' }}>
               Max Level: {facilities?.facilities.trainingGround.maxLevel || 10}
             </div>
+            
             <div style={{ 
-              backgroundColor: '#7d33f3ff', 
+              backgroundColor: '#333', 
               padding: '12px', 
               borderRadius: '4px',
-              fontSize: '14px'
+              fontSize: '12px',
+              color: '#fff',
+              marginBottom: '15px'
             }}>
               <strong>Training Bonus:</strong>
               <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
-                <li>Base: +1 stat point per training</li>
-                {facilities?.facilities.trainingGround.level >= 5 && <li>Level 5+: +2 stat points</li>}
-                {facilities?.facilities.trainingGround.level >= 10 && <li>Level 10: +3 stat points</li>}
+                <li>Base: +1 stat point</li>
+                {facilities?.facilities.trainingGround.level >= 5 && <li>Level 5+: +2 points</li>}
+                {facilities?.facilities.trainingGround.level >= 10 && <li>Level 10: +3 points</li>}
               </ul>
             </div>
-          </div>
-          <div>
+
             {facilities?.facilities.trainingGround.level < 10 ? (
               <button
                 onClick={handleUpgradeFacility}
                 disabled={upgrading || !facilities?.facilities.trainingGround.canUpgrade}
                 style={{
-                  padding: '15px 35px',
-                  backgroundColor: facilities?.facilities.trainingGround.canUpgrade ? '#28a745' : '#6c757d',
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: facilities?.facilities.trainingGround.canUpgrade ? '#28a745' : '#666',
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  fontSize: '16px',
+                  fontSize: '14px',
                   fontWeight: 'bold',
-                  cursor: facilities?.facilities.trainingGround.canUpgrade ? 'pointer' : 'not-allowed',
-                  minWidth: '180px'
+                  cursor: facilities?.facilities.trainingGround.canUpgrade ? 'pointer' : 'not-allowed'
                 }}
               >
                 {upgrading ? 'Upgrading...' : 
                  !facilities?.facilities.trainingGround.canUpgrade ? 'Insufficient Funds' :
-                 'Upgrade'}
-                <div style={{ fontSize: '12px', marginTop: '5px' }}>
-                  ${facilities?.facilities.trainingGround.upgradeCost?.toLocaleString()}
-                </div>
+                 `Upgrade - $${facilities?.facilities.trainingGround.upgradeCost?.toLocaleString()}`}
               </button>
             ) : (
               <div style={{
-                padding: '15px 35px',
+                padding: '12px',
                 backgroundColor: '#28a745',
                 borderRadius: '4px',
                 textAlign: 'center',
@@ -238,158 +250,185 @@ function Training() {
               </div>
             )}
           </div>
-        </div>
-      </div>
 
-      <div style={{
-        backgroundColor: '#2266aaff',
-        border: '1px solid #dee2e6',
-        borderRadius: '8px',
-        overflow: 'hidden'
-      }}>
+          {/* Training Tips */}
+          <div style={{
+            padding: '15px',
+            backgroundColor: '#333',
+            borderRadius: '8px',
+            border: '1px solid #444'
+          }}>
+            <h4 style={{ marginTop: 0, fontSize: '14px', color: '#ffc107' }}>💡 Training Tips</h4>
+            <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12px', lineHeight: '1.6', color: '#ccc' }}>
+              <li>Train 5 players/day</li>
+              <li>24hr cooldown per player</li>
+              <li>Choose stat to train</li>
+              <li>Stats capped at 99</li>
+              <li>Training is FREE</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Right Column - Squad Training Table (800px) */}
         <div style={{ 
-          padding: '20px', 
-          backgroundColor: '#0f3a66ff',
-          borderBottom: '1px solid #dee2e6'
+          border: '1px solid #424242ff',
+          backgroundColor: '#1a1a1a',
+          overflow: 'auto'
         }}>
-          <h2 style={{ margin: 0 }}>Squad Training</h2>
-          <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#ccc' }}>
-            Train up to 5 players per day. Each player can train once every 24 hours.
-          </p>
-        </div>
-
-        <div style={{ overflowX: 'auto' }}>
           <table style={{ 
             width: '100%', 
             borderCollapse: 'collapse',
-            fontSize: '14px'
+            fontSize: '12px'
           }}>
             <thead>
-              <tr style={{ backgroundColor: '#0f3a66ff' }}>
-                <th style={{ padding: '12px', textAlign: 'left', minWidth: '180px' }}>Player</th>
-                <th style={{ padding: '12px', textAlign: 'center' }}>Age</th>
-                <th style={{ padding: '12px', textAlign: 'center', fontWeight: 'bold' }}>OVR</th>
-                <th style={{ padding: '12px', textAlign: 'center' }}>PAC</th>
-                <th style={{ padding: '12px', textAlign: 'center' }}>SHO</th>
-                <th style={{ padding: '12px', textAlign: 'center' }}>PAS</th>
-                <th style={{ padding: '12px', textAlign: 'center' }}>DRI</th>
-                <th style={{ padding: '12px', textAlign: 'center' }}>DEF</th>
-                <th style={{ padding: '12px', textAlign: 'center' }}>PHY</th>
-                <th style={{ padding: '12px', textAlign: 'center', minWidth: '100px' }}>Status</th>
-                <th style={{ padding: '12px', textAlign: 'center', minWidth: '300px' }}>Train Stat</th>
+              <tr style={{ borderBottom: '1px solid #8b8b8bff' }}>
+                <th style={{ padding: '4px 4px', textAlign: 'left', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  PLAYER
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  AGE
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  OVR
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  PAC
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  SHO
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  PAS
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  DRI
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  DEF
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  PHY
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  STATUS
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999' }}>
+                  TRAIN
+                </th>
               </tr>
             </thead>
             <tbody>
-              {players.map((player) => {
-                const canTrain = canTrainPlayer(player);
-                const timeLeft = getTimeUntilTraining(player);
-                const isTraining = trainingPlayer === player.id;
+              {players.length === 0 ? (
+                <tr>
+                  <td colSpan="11" style={{ padding: '30px', textAlign: 'center', color: '#666' }}>
+                    No players in squad
+                  </td>
+                </tr>
+              ) : (
+                players.map((player) => {
+                  const canTrain = canTrainPlayer(player);
+                  const timeLeft = getTimeUntilTraining(player);
+                  const isTraining = trainingPlayer === player.id;
 
-                return (
-                  <tr 
-                    key={player.id}
-                    style={{ 
-                      borderTop: '1px solid #dee2e6',
-                      backgroundColor: canTrain ? '#2266aaff' : '#1a5080'
-                    }}
-                  >
-                    <td style={{ padding: '12px' }}>
-                      <div style={{ fontWeight: 'bold' }}>{player.first_name} {player.last_name}</div>
-                      <div style={{ fontSize: '12px', color: '#ccc' }}>
-                        {player.position} • {player.nationality}
-                      </div>
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>{player.age}</td>
-                    <td style={{ 
-                      padding: '12px', 
-                      textAlign: 'center',
-                      fontWeight: 'bold',
-                      fontSize: '16px',
-                      color: player.overall_rating >= 80 ? '#00ff00' : player.overall_rating >= 70 ? '#90ee90' : player.overall_rating >= 60 ? '#ffd700' : '#ff6347'
-                    }}>
-                      {player.overall_rating}
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>{player.pace}</td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>{player.shooting}</td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>{player.passing}</td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>{player.dribbling}</td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>{player.defending}</td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>{player.physical}</td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
-                      {canTrain ? (
-                        <span style={{ color: '#28a745', fontWeight: 'bold' }}>✓ Ready</span>
-                      ) : (
-                        <span style={{ color: '#ffc107', fontSize: '12px' }}>{timeLeft}</span>
-                      )}
-                    </td>
-                    <td style={{ padding: '12px', textAlign: 'center' }}>
-                      {canTrain && dailyTrainingsUsed < DAILY_TRAINING_LIMIT ? (
-                        <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                          {trainableStats.map(stat => (
-                            <button
-                              key={stat.key}
-                              onClick={() => handleTrainPlayer(player.id, `${player.first_name} ${player.last_name}`, stat.key)}
-                              disabled={isTraining || player[stat.key] >= MAX_STAT_VALUE}
-                              style={{
-                                padding: '6px 10px',
-                                backgroundColor: player[stat.key] >= MAX_STAT_VALUE ? '#6c757d' : '#007bff',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '3px',
-                                fontSize: '11px',
-                                fontWeight: 'bold',
-                                cursor: player[stat.key] >= MAX_STAT_VALUE ? 'not-allowed' : 'pointer',
-                                opacity: isTraining ? 0.6 : 1
-                              }}
-                              title={player[stat.key] >= MAX_STAT_VALUE ? 'Max stat reached' : `Train ${stat.label}`}
-                            >
-                              {stat.label.substring(0, 3).toUpperCase()}
-                            </button>
-                          ))}
+                  return (
+                    <tr 
+                      key={player.id}
+                      style={{ 
+                        borderBottom: '1px solid #333',
+                        backgroundColor: 'transparent',
+                        color: '#fff'
+                      }}
+                    >
+                      <td style={{ padding: '4px 4px', borderRight: '1px solid #333' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '11px' }}>
+                          {player.first_name} {player.last_name}
                         </div>
-                      ) : (
-                        <span style={{ color: '#999', fontSize: '12px' }}>
-                          {dailyTrainingsUsed >= DAILY_TRAINING_LIMIT ? 'Daily limit reached' : 'On cooldown'}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+                        <div style={{ fontSize: '10px', color: '#999' }}>
+                          {player.position}
+                        </div>
+                      </td>
+                      <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
+                        {player.age}
+                      </td>
+                      <td style={{ 
+                        padding: '4px 4px', 
+                        textAlign: 'center',
+                        borderRight: '1px solid #333',
+                        fontWeight: 'bold',
+                        color: player.overall_rating >= 80 ? '#00ff00' : 
+                               player.overall_rating >= 70 ? '#90ee90' : 
+                               player.overall_rating >= 60 ? '#ffd700' : '#ff6347'
+                      }}>
+                        {player.overall_rating}
+                      </td>
+                      <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
+                        {player.pace}
+                      </td>
+                      <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
+                        {player.shooting}
+                      </td>
+                      <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
+                        {player.passing}
+                      </td>
+                      <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
+                        {player.dribbling}
+                      </td>
+                      <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
+                        {player.defending}
+                      </td>
+                      <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
+                        {player.physical}
+                      </td>
+                      <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333', fontSize: '11px' }}>
+                        {canTrain ? (
+                          <span style={{ color: '#28a745', fontWeight: 'bold' }}>✓ Ready</span>
+                        ) : (
+                          <span style={{ color: '#ffc107' }}>{timeLeft}</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '4px 4px', textAlign: 'center' }}>
+                        {canTrain && dailyTrainingsUsed < DAILY_TRAINING_LIMIT ? (
+                          <div style={{ display: 'flex', gap: '3px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                            {trainableStats.map(stat => (
+                              <button
+                                key={stat.key}
+                                onClick={() => handleTrainPlayer(player.id, `${player.first_name} ${player.last_name}`, stat.key)}
+                                disabled={isTraining || player[stat.key] >= MAX_STAT_VALUE}
+                                style={{
+                                  padding: '3px 6px',
+                                  backgroundColor: player[stat.key] >= MAX_STAT_VALUE ? '#666' : '#007bff',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '3px',
+                                  fontSize: '10px',
+                                  fontWeight: 'bold',
+                                  cursor: player[stat.key] >= MAX_STAT_VALUE ? 'not-allowed' : 'pointer',
+                                  opacity: isTraining ? 0.6 : 1
+                                }}
+                                title={player[stat.key] >= MAX_STAT_VALUE ? 'Max' : `Train ${stat.label}`}
+                              >
+                                {stat.label.substring(0, 3).toUpperCase()}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <span style={{ color: '#999', fontSize: '10px' }}>
+                            {dailyTrainingsUsed >= DAILY_TRAINING_LIMIT ? 'Limit' : 'Wait'}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
 
-        {players.length === 0 && (
-          <div style={{ 
-            padding: '50px', 
-            textAlign: 'center',
-            color: '#999'
-          }}>
-            <h3>No players in squad</h3>
-          </div>
-        )}
-      </div>
-
-      <div style={{
-        marginTop: '30px',
-        padding: '20px',
-        backgroundColor: '#855a0bff',
-        borderRadius: '8px',
-        border: '1px solid #b3d9ff'
-      }}>
-        <h3 style={{ marginTop: 0 }}>💡 Training Tips</h3>
-        <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.8' }}>
-          <li>Higher level Training Ground provides better stat gains</li>
-          <li>You can train up to 5 different players per day</li>
-          <li>Each player can only be trained once every 24 hours</li>
-          <li>Choose which stat to train - customize your players!</li>
-          <li>Training is FREE - no cost per session</li>
-          <li>Stats are capped at 99</li>
-        </ul>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default Training;
