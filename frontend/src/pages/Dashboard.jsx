@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { verifyToken, getLeagueTable, getAlphaFixtures, getRecentResults } from '../services/api';
+import { verifyToken, getLeagueTable, getLeagueData, getRecentResults } from '../services/api';
 import { getSocket } from '../services/socket';
 
 function Dashboard() {
@@ -84,7 +84,7 @@ useEffect(() => {
       setTeam(userData.team);
 
         // Get league ID from alpha fixtures
-      const fixturesData = await getAlphaFixtures();
+      const fixturesData = await getLeagueData();
 
       // Load league table
       if (fixturesData.league?.id) {

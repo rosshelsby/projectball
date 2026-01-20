@@ -34,6 +34,7 @@ const trainingRoutes = require('./routes/training');
 const transferRoutes = require('./routes/transfers');
 const scoutRoutes = require('./routes/scout');
 const usersRoutes = require('./routes/users');
+const fixturesRoutes = require('./routes/fixtures');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -43,6 +44,7 @@ app.use('/api/training', trainingRoutes);
 app.use('/api/transfers', transferRoutes);
 app.use('/api/scout', scoutRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/fixtures', fixturesRoutes);
 
 // Test route - just to verify server works
 app.get('/api/health', (req, res) => {
@@ -87,8 +89,8 @@ app.set('io', io);
 
 // Start server
 const PORT = process.env.PORT || 5000;
-const { startScheduler } = require('./services/matchScheduler');
-startScheduler(5);
+// const { startScheduler } = require('./services/matchScheduler');
+// startScheduler(5);
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

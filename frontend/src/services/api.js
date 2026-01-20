@@ -402,41 +402,23 @@ export const promoteProspect = async (prospectId) => {
   return response.data;
 };
 
-// ALPHA: Get fixtures with opponents and match limit
-export const getAlphaFixtures = async () => {
-  const token = localStorage.getItem('token');
-  
-  if (!token) {
-    throw new Error('No token found');
-  }
+// ========== FIXTURES & MATCHES ==========
 
+export const getAlphaFixtures = async () => {
   const response = await axios.get(`${API_URL}/matches/alpha-fixtures`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
-  
   return response.data;
 };
 
-// ALPHA: Play a match
-export const playMatch = async (opponentTeamId, isHome) => {
-  const token = localStorage.getItem('token');
-  
-  if (!token) {
-    throw new Error('No token found');
-  }
+// Alias for getAlphaFixtures
+export const getLeagueData = getAlphaFixtures;
 
-  const response = await axios.post(
-    `${API_URL}/matches/play-match`,
-    { opponentTeamId, isHome },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
+export const playFriendly = async (opponentId, isHome) => {
+  const response = await axios.post(`${API_URL}/matches/play-friendly`, 
+    { opponentId, isHome },
+    { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
   );
-  
   return response.data;
 };
 

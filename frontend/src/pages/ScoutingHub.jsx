@@ -133,7 +133,7 @@ function ScoutingHub() {
       ITA: '🇮🇹',
       GER: '🇩🇪',
       ESP: '🇪🇸',
-      ENG: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+      ENG: 'EN',
       FRA: '🇫🇷',
       ARG: '🇦🇷',
       NED: '🇳🇱'
@@ -188,79 +188,181 @@ function ScoutingHub() {
     );
   }
 
-  return (
-    <div style={{ 
-      maxWidth: '1400px', 
-      margin: '20px auto', 
-      padding: '20px',
-      fontFamily: 'sans-serif'
+ return (
+  <div style={{
+    minHeight: 'calc(100vh - 142px)',
+    backgroundColor: 'transparent',
+    padding: '1px 0'
+  }}>
+    {/* Single Module Container - Same width as dashboard */}
+    <div style={{
+      maxWidth: '1200px',
+      margin: '0 auto'
     }}>
-      <h1>Scouting Hub</h1>
+      
+      {/* Scouting Module with Grid */}
+      <div style={{
+        backgroundColor: '#1a1a1a',
+        padding: '0px',
+        borderRadius: '0px',
+        display: 'grid',
+        gridTemplateColumns: '400px 800px',
+        gap: '0px'
+      }}>
+        
+        {/* Left Column - Prospects Table (400px) */}
+        <div style={{ 
+          border: '1px solid #424242ff',
+          borderRight: 'none',
+          backgroundColor: '#1a1a1a',
+          overflow: 'auto'
+        }}>
+          <table style={{ 
+            width: '100%', 
+            borderCollapse: 'collapse',
+            fontSize: '12px'
+          }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #8b8b8bff' }}>
+                <th style={{ padding: '4px 4px', textAlign: 'left', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  POS
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'left', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  NAME
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  AGE
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  OVR
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999', borderRight: '1px solid #8b8b8bff' }}>
+                  POT
+                </th>
+                <th style={{ padding: '4px 4px', textAlign: 'center', color: '#999' }}>
+                  ACT
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {prospects.length === 0 ? (
+                <tr>
+                  <td colSpan="6" style={{ padding: '30px 10px', textAlign: 'center', color: '#666', fontSize: '11px' }}>
+                    No prospects yet.<br/>Scout to find talent!
+                  </td>
+                </tr>
+              ) : (
+                prospects.map((prospect) => (
+                  <tr 
+                    key={prospect.id}
+                    style={{ 
+                      borderBottom: '1px solid #333',
+                      backgroundColor: 'transparent',
+                      color: '#fff'
+                    }}
+                  >
+                    <td style={{ padding: '4px 4px', borderRight: '1px solid #333' }}>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '2px 6px',
+                        borderRadius: '3px',
+                        backgroundColor: getPositionColor(prospect.position),
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '11px'
+                      }}>
+                        {prospect.position}
+                      </span>
+                    </td>
+                    <td style={{ padding: '4px 4px', borderRight: '1px solid #333', fontWeight: 'bold', fontSize: '11px' }}>
+                      <div style={{ marginBottom: '2px' }}>{prospect.name}</div>
+                      <div style={{ fontSize: '18px' }}>{getNationalityFlag(prospect.nationality)}</div>
+                    </td>
+                    <td style={{ padding: '4px 4px', textAlign: 'center', borderRight: '1px solid #333' }}>
+                      {prospect.age}
+                    </td>
+                    <td style={{
+                      padding: '4px 4px',
+                      textAlign: 'center',
+                      borderRight: '1px solid #333',
+                      fontWeight: 'bold',
+                      color: getRatingColor(prospect.overallRating)
+                    }}>
+                      {prospect.overallRating}
+                    </td>
+                    <td style={{
+                      padding: '4px 4px',
+                      textAlign: 'center',
+                      borderRight: '1px solid #333',
+                      fontWeight: 'bold',
+                      color: '#007bff'
+                    }}>
+                      {prospect.potential}
+                    </td>
+                    <td style={{ padding: '4px 4px', textAlign: 'center' }}>
+                      <button
+                        onClick={() => handlePromote(prospect.id, prospect.name)}
+                        disabled={promoting === prospect.id}
+                        style={{
+                          padding: '3px 6px',
+                          backgroundColor: promoting === prospect.id ? '#666' : '#28a745',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '3px',
+                          cursor: promoting === prospect.id ? 'not-allowed' : 'pointer',
+                          fontSize: '10px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {promoting === prospect.id ? '...' : 'Promote'}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-      {/* Tabs */}
-      <div style={{ marginBottom: '30px', display: 'flex', gap: '10px' }}>
-        <button
-          onClick={() => setActiveTab('scouting')}
-          style={{
-            padding: '12px 24px',
-            backgroundColor: activeTab === 'scouting' ? '#007bff' : '#e9ecef',
-            color: activeTab === 'scouting' ? 'white' : '#000',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            fontSize: '16px'
-          }}
-        >
-          🔍 Scouting Missions
-        </button>
-        <button
-          onClick={() => setActiveTab('prospects')}
-          style={{
-            padding: '12px 24px',
-            backgroundColor: activeTab === 'prospects' ? '#007bff' : '#e9ecef',
-            color: activeTab === 'prospects' ? 'white' : '#000',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            fontSize: '16px'
-          }}
-        >
-          👤 My Prospects ({prospects.length})
-        </button>
-      </div>
-
-      {/* SCOUTING TAB */}
-      {activeTab === 'scouting' && (
-        <>
+        {/* Right Column - Scouting Missions (800px) */}
+        <div style={{ 
+          border: '1px solid #424242ff',
+          backgroundColor: '#1a1a1a',
+          overflow: 'auto',
+          padding: '20px'
+        }}>
+          
           {/* Active Missions */}
           {missions.active.length > 0 && (
-            <div style={{ marginBottom: '30px' }}>
-              <h2>Active Missions ({missions.active.length}/3)</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            <div style={{ marginBottom: '20px' }}>
+              <h3 style={{ color: '#fff', fontSize: '16px', marginBottom: '15px' }}>
+                Active Missions ({missions.active.length}/3)
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
                 {missions.active.map(mission => (
                   <div
                     key={mission.id}
                     style={{
                       border: '2px solid #007bff',
                       borderRadius: '8px',
-                      padding: '20px',
-                      backgroundColor: '#0f3a66ff'
+                      padding: '15px',
+                      backgroundColor: '#333'
                     }}
                   >
-                    <div style={{ fontSize: '32px', marginBottom: '10px' }}>
+                    <div style={{ fontSize: '28px', marginBottom: '8px' }}>
                       {getNationalityFlag(mission.nationality)}
                     </div>
-                    <h3 style={{ margin: '0 0 10px 0' }}>{getNationalityName(mission.nationality)}</h3>
-                    <div style={{ fontSize: '14px', color: '#666', marginBottom: '15px' }}>
-                      Duration: {mission.durationHours} hours
+                    <h4 style={{ margin: '0 0 8px 0', color: '#fff', fontSize: '14px' }}>
+                      {getNationalityName(mission.nationality)}
+                    </h4>
+                    <div style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>
+                      Duration: {mission.durationHours}h
                     </div>
                     <div style={{
-                      fontSize: '24px',
+                      fontSize: '20px',
                       fontWeight: 'bold',
                       color: mission.isReady ? '#28a745' : '#007bff',
-                      marginBottom: '10px'
+                      marginBottom: '8px'
                     }}>
                       {formatTimeRemaining(mission.minutesRemaining)}
                     </div>
@@ -270,16 +372,17 @@ function ScoutingHub() {
                         disabled={collecting === mission.id}
                         style={{
                           width: '100%',
-                          padding: '10px',
-                          backgroundColor: collecting === mission.id ? '#0f3a66ff' : '#28a745',
+                          padding: '8px',
+                          backgroundColor: collecting === mission.id ? '#666' : '#28a745',
                           color: 'white',
                           border: 'none',
                           borderRadius: '4px',
                           cursor: collecting === mission.id ? 'not-allowed' : 'pointer',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          fontSize: '12px'
                         }}
                       >
-                        {collecting === mission.id ? 'Collecting...' : 'Collect Results'}
+                        {collecting === mission.id ? 'Collecting...' : 'Collect'}
                       </button>
                     )}
                   </div>
@@ -288,26 +391,30 @@ function ScoutingHub() {
             </div>
           )}
 
-          {/* Completed Missions Ready to Collect */}
+          {/* Completed Missions */}
           {missions.completed.length > 0 && (
-            <div style={{ marginBottom: '30px' }}>
-              <h2>✅ Ready to Collect</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            <div style={{ marginBottom: '20px' }}>
+              <h3 style={{ color: '#fff', fontSize: '16px', marginBottom: '15px' }}>
+                ✅ Ready to Collect
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
                 {missions.completed.map(mission => (
                   <div
                     key={mission.id}
                     style={{
                       border: '2px solid #28a745',
                       borderRadius: '8px',
-                      padding: '20px',
-                      backgroundColor: '#0f3a66ff'
+                      padding: '15px',
+                      backgroundColor: '#333'
                     }}
                   >
-                    <div style={{ fontSize: '32px', marginBottom: '10px' }}>
+                    <div style={{ fontSize: '28px', marginBottom: '8px' }}>
                       {getNationalityFlag(mission.nationality)}
                     </div>
-                    <h3 style={{ margin: '0 0 10px 0' }}>{getNationalityName(mission.nationality)}</h3>
-                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#28a745', marginBottom: '15px' }}>
+                    <h4 style={{ margin: '0 0 8px 0', color: '#fff', fontSize: '14px' }}>
+                      {getNationalityName(mission.nationality)}
+                    </h4>
+                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#28a745', marginBottom: '10px' }}>
                       Mission Complete!
                     </div>
                     <button
@@ -315,16 +422,17 @@ function ScoutingHub() {
                       disabled={collecting === mission.id}
                       style={{
                         width: '100%',
-                        padding: '10px',
-                        backgroundColor: collecting === mission.id ? '#0f3a66ff' : '#28a745',
+                        padding: '8px',
+                        backgroundColor: collecting === mission.id ? '#666' : '#28a745',
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
                         cursor: collecting === mission.id ? 'not-allowed' : 'pointer',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        fontSize: '12px'
                       }}
                     >
-                      {collecting === mission.id ? 'Collecting...' : 'Collect Results'}
+                      {collecting === mission.id ? 'Collecting...' : 'Collect'}
                     </button>
                   </div>
                 ))}
@@ -334,53 +442,59 @@ function ScoutingHub() {
 
           {/* Start New Mission */}
           <div>
-            <h2>🌍 Start New Scouting Mission</h2>
+            <h3 style={{ color: '#fff', fontSize: '16px', marginBottom: '10px' }}>
+              🌍 Start New Scouting Mission
+            </h3>
             <div style={{ 
-              backgroundColor: '#0f3a66ff',
-              padding: '15px',
+              backgroundColor: '#333',
+              padding: '12px',
               borderRadius: '8px',
-              marginBottom: '20px',
-              border: '1px solid #ffc107'
+              marginBottom: '15px',
+              border: '1px solid #ffc107',
+              fontSize: '12px',
+              color: '#ccc'
             }}>
-              <strong>💡 How it works:</strong> Send a scout to search for young talent. Higher-tier nations cost more and take longer, but may produce better prospects. You can have up to 3 active missions at once.
+              <strong>💡 How it works:</strong> Send scouts to find young talent. Higher-tier nations cost more but may produce better prospects. Max 3 active missions.
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px' }}>
               {scoutingOptions.map(option => (
                 <div
                   key={option.nationality}
                   style={{
                     border: `3px solid ${getTierColor(option.tier)}`,
                     borderRadius: '8px',
-                    padding: '20px',
-                    backgroundColor: '#0f3a66ff',
+                    padding: '15px',
+                    backgroundColor: '#333',
                     position: 'relative'
                   }}
                 >
                   <div style={{
                     position: 'absolute',
-                    top: '10px',
-                    right: '10px',
+                    top: '8px',
+                    right: '8px',
                     backgroundColor: getTierColor(option.tier),
                     color: 'white',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '12px',
+                    padding: '3px 6px',
+                    borderRadius: '3px',
+                    fontSize: '10px',
                     fontWeight: 'bold'
                   }}>
                     Tier {option.tier}
                   </div>
                   
-                  <div style={{ fontSize: '48px', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '36px', marginBottom: '8px' }}>
                     {getNationalityFlag(option.nationality)}
                   </div>
-                  <h3 style={{ margin: '0 0 15px 0' }}>{getNationalityName(option.nationality)}</h3>
+                  <h4 style={{ margin: '0 0 10px 0', color: '#fff', fontSize: '14px' }}>
+                    {getNationalityName(option.nationality)}
+                  </h4>
                   
-                  <div style={{ marginBottom: '15px' }}>
-                    <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>
-                      ⏱️ Duration: <strong>{option.hours} hours</strong>
+                  <div style={{ marginBottom: '10px' }}>
+                    <div style={{ fontSize: '11px', color: '#999', marginBottom: '3px' }}>
+                      ⏱️ {option.hours} hours
                     </div>
-                    <div style={{ fontSize: '14px', color: '#666' }}>
-                      💰 Cost: <strong>${option.cost.toLocaleString()}</strong>
+                    <div style={{ fontSize: '11px', color: '#999' }}>
+                      💰 ${option.cost.toLocaleString()}
                     </div>
                   </div>
                   
@@ -389,165 +503,33 @@ function ScoutingHub() {
                     disabled={starting === option.nationality || missions.active.length >= 3}
                     style={{
                       width: '100%',
-                      padding: '10px',
-                      backgroundColor: starting === option.nationality ? '#0f3a66ff' : 
-                                      missions.active.length >= 3 ? '#6c757d' :
+                      padding: '8px',
+                      backgroundColor: starting === option.nationality ? '#666' : 
+                                      missions.active.length >= 3 ? '#666' :
                                       getTierColor(option.tier),
                       color: 'white',
                       border: 'none',
                       borderRadius: '4px',
                       cursor: (starting === option.nationality || missions.active.length >= 3) ? 'not-allowed' : 'pointer',
-                      fontWeight: 'bold'
+                      fontWeight: 'bold',
+                      fontSize: '12px'
                     }}
                   >
                     {starting === option.nationality ? 'Starting...' :
                      missions.active.length >= 3 ? 'Max Missions' :
-                     'Start Scouting'}
+                     'Start Scout'}
                   </button>
                 </div>
               ))}
             </div>
           </div>
-        </>
-      )}
 
-      {/* PROSPECTS TAB */}
-      {activeTab === 'prospects' && (
-        <div>
-          <h2>Youth Prospects ({prospects.length})</h2>
-          
-          {prospects.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '50px',
-              backgroundColor: '#0f3a66ff',
-              borderRadius: '8px',
-              color: '#666'
-            }}>
-              <div style={{ fontSize: '48px', marginBottom: '20px' }}>🔍</div>
-              <h3>No prospects yet</h3>
-              <p>Start a scouting mission to find young talent!</p>
-            </div>
-          ) : (
-            <div style={{
-              overflowX: 'auto',
-              border: '1px solid #dee2e6',
-              borderRadius: '8px',
-              backgroundColor: '#0f3a66ff'
-            }}>
-              <table style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                minWidth: '1000px'
-              }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#0f3a66ff', borderBottom: '2px solid #dee2e6' }}>
-                    <th style={{ padding: '12px 8px', textAlign: 'left' }}>NAT</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'left' }}>POS</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'left' }}>NAME</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center' }}>AGE</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 'bold' }}>OVR</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 'bold', color: '#007bff' }}>POT</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center' }}>PAC</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center' }}>SHO</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center' }}>PAS</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center' }}>DEF</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center' }}>PHY</th>
-                    <th style={{ padding: '12px 8px', textAlign: 'center' }}>ACTION</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {prospects.map((prospect, index) => (
-                    <tr
-                      key={prospect.id}
-                      style={{
-                        borderBottom: '1px solid #dee2e6',
-                        backgroundColor: index % 2 === 0 ? '#0f3a66ff' : '#0f3a66ff'
-                      }}
-                    >
-                      <td style={{ padding: '12px 8px', fontSize: '24px' }}>
-                        {getNationalityFlag(prospect.nationality)}
-                      </td>
-                      <td style={{ padding: '12px 8px' }}>
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          backgroundColor: getPositionColor(prospect.position),
-                          color: 'white',
-                          fontWeight: 'bold',
-                          fontSize: '12px'
-                        }}>
-                          {prospect.position}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 8px', fontWeight: 'bold' }}>
-                        {prospect.name}
-                      </td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                        {prospect.age}
-                      </td>
-                      <td style={{
-                        padding: '12px 8px',
-                        textAlign: 'center',
-                        fontWeight: 'bold',
-                        fontSize: '18px',
-                        color: getRatingColor(prospect.overallRating)
-                      }}>
-                        {prospect.overallRating}
-                      </td>
-                      <td style={{
-                        padding: '12px 8px',
-                        textAlign: 'center',
-                        fontWeight: 'bold',
-                        fontSize: '18px',
-                        color: '#007bff'
-                      }}>
-                        {prospect.potential}
-                      </td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                        {prospect.stats.pace}
-                      </td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                        {prospect.stats.shooting}
-                      </td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                        {prospect.stats.passing}
-                      </td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                        {prospect.stats.defending}
-                      </td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                        {prospect.stats.physical}
-                      </td>
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                        <button
-                          onClick={() => handlePromote(prospect.id, prospect.name)}
-                          disabled={promoting === prospect.id}
-                          style={{
-                            padding: '6px 12px',
-                            backgroundColor: promoting === prospect.id ? '#0f3a66ff' : '#28a745',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: promoting === prospect.id ? 'not-allowed' : 'pointer',
-                            fontSize: '12px',
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          {promoting === prospect.id ? '...' : 'Promote'}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
-      )}
+
+      </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default ScoutingHub;

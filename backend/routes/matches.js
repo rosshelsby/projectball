@@ -362,14 +362,17 @@ router.get('/alpha-fixtures', verifyToken, async (req, res) => {
       .eq('is_played', true)
       .order('created_at', { ascending: false });
     
-    // Count today's matches
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const matchesToday = (matches || []).filter(m => {
-      const matchDate = new Date(m.created_at);
-      matchDate.setHours(0, 0, 0, 0);
-      return matchDate.getTime() === today.getTime();
-    }).length;
+      // Count today's FRIENDLY matches only
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const { data: todayFriendlies } = await supabase
+        .from('friendly_matches')
+        .select('id')
+        .eq('user_id', userId)
+        .gte('created_at', today.toISOString());
+
+      const matchesToday = todayFriendlies?.length || 0;
 
     console.log('Matches today:', matchesToday);  // ← Add this
     console.log('Total matches:', matches?.length);  // ← Add this
@@ -558,6 +561,121 @@ if (io) {
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Failed to play match' });
+  }
+});
+
+// Play a FRIENDLY match (does not affect league standings)
+router.post('/play-friendly', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { opponentId, isHome } = req.body;
+    
+    // Check daily limit
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const { data: todayFriendlies } = await supabase
+      .from('friendly_matches')
+      .select('id')
+      .eq('user_id', userId)
+      .gte('created_at', today.toISOString());
+    
+    if (todayFriendlies && todayFriendlies.length >= 5) {
+      return res.status(400).json({ error: 'Daily friendly limit reached (5/5)' });
+    }
+    
+    // Get user's team
+    const { data: userTeam } = await supabase
+      .from('teams')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+    
+    if (!userTeam) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    
+    // Get opponent team
+    const { data: opponentTeam } = await supabase
+      .from('teams')
+      .select('*')
+      .eq('id', opponentId)
+      .single();
+    
+    if (!opponentTeam) {
+      return res.status(404).json({ error: 'Opponent not found' });
+    }
+    
+    // Get squad ratings
+    const { data: userPlayers } = await supabase
+      .from('players')
+      .select('overall_rating')
+      .eq('team_id', userTeam.id);
+    
+    const { data: opponentPlayers } = await supabase
+      .from('players')
+      .select('overall_rating')
+      .eq('team_id', opponentTeam.id);
+    
+    const userRating = userPlayers.reduce((sum, p) => sum + p.overall_rating, 0) / userPlayers.length;
+    const opponentRating = opponentPlayers.reduce((sum, p) => sum + p.overall_rating, 0) / opponentPlayers.length;
+    
+    // Determine home/away
+    const homeRating = isHome ? userRating : opponentRating;
+    const awayRating = isHome ? opponentRating : userRating;
+    
+    // Simulate match using existing function
+    const result = simulateSingleMatch(homeRating, awayRating);
+    
+    const homeScore = result.homeGoals;
+    const awayScore = result.awayGoals;
+    
+    let userResult;
+    if (isHome) {
+      userResult = homeScore > awayScore ? 'W' : homeScore < awayScore ? 'L' : 'D';
+    } else {
+      userResult = awayScore > homeScore ? 'W' : awayScore < homeScore ? 'L' : 'D';
+    }
+    
+    // Save friendly match
+    const { error: friendlyError } = await supabase
+      .from('friendly_matches')
+      .insert({
+        user_id: userId,
+        team_id: userTeam.id,
+        opponent_team_id: opponentTeam.id,
+        is_home: isHome,
+        home_score: homeScore,
+        away_score: awayScore,
+        home_team_name: isHome ? userTeam.team_name : opponentTeam.team_name,
+        away_team_name: isHome ? opponentTeam.team_name : userTeam.team_name,
+        result: userResult
+      });
+    
+    if (friendlyError) throw friendlyError;
+    
+    // Get updated friendly count
+    const { data: updatedFriendlies } = await supabase
+      .from('friendly_matches')
+      .select('id')
+      .eq('user_id', userId)
+      .gte('created_at', today.toISOString());
+    
+    res.json({
+      match: {
+        homeTeam: isHome ? userTeam.team_name : opponentTeam.team_name,
+        awayTeam: isHome ? opponentTeam.team_name : userTeam.team_name,
+        homeScore: homeScore,
+        awayScore: awayScore,
+        userResult: userResult,
+        isHome: isHome
+      },
+      matchesRemaining: 5 - updatedFriendlies.length
+    });
+    
+  } catch (error) {
+    console.error('Error playing friendly:', error);
+    res.status(500).json({ error: 'Failed to play friendly match' });
   }
 });
 
